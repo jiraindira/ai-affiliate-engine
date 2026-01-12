@@ -939,5 +939,338 @@
         ]
       }
     ]
+  },
+  {
+    "date": "2026-01-12",
+    "title": "Top Winter Wellness Gifts: Boost Immunity and Energy for 2026",
+    "topic": "Top Winter Wellness Gifts: Boost Immunity and Energy for 2026",
+    "category": "health_and_fitness",
+    "audience": "Health-conscious adults looking for effective winter wellness products and gift ideas",
+    "file": "site/src/content/posts/2026-01-12-top-winter-wellness-gifts-boost-immunity-and-energy-for-2026.md",
+    "product_count": 8,
+    "heroImage": "/images/posts/2026-01-12-top-winter-wellness-gifts-boost-immunity-and-energy-for-2026/hero.webp",
+    "word_count_before": 388,
+    "word_count_after": 1606,
+    "depth_modules_applied": [
+      {
+        "name": "why_this_list",
+        "added_words_estimate": 106,
+        "notes": "Rewrote Why this list (upgrade)."
+      },
+      {
+        "name": "how_we_chose",
+        "added_words_estimate": 224,
+        "notes": "Added How we chose (upgrade)."
+      },
+      {
+        "name": "quick_picks",
+        "added_words_estimate": 172,
+        "notes": "Added Quick picks."
+      },
+      {
+        "name": "buyers_guide",
+        "added_words_estimate": 204,
+        "notes": "Added Buyer’s guide (upgrade)."
+      },
+      {
+        "name": "faqs",
+        "added_words_estimate": 288,
+        "notes": "Added FAQs (upgrade)."
+      },
+      {
+        "name": "alternatives",
+        "added_words_estimate": 224,
+        "notes": "Added Alternatives worth considering (upgrade)."
+      }
+    ],
+    "title_candidates_top3": []
+  },
+  {
+    "date": "2026-01-12",
+    "title": "Top Cozy Winter Loungewear Gifts for Ultimate Comfort in 2026",
+    "topic": "Top Cozy Winter Loungewear Gifts for Ultimate Comfort in 2026",
+    "category": "fashion",
+    "audience": "US adults looking for comfortable and stylish winter clothing gifts",
+    "file": "site/src/content/posts/2026-01-12-top-cozy-winter-loungewear-gifts-for-ultimate-comfort-in-2026.md",
+    "product_count": 8,
+    "heroImage": "/images/posts/2026-01-12-top-cozy-winter-loungewear-gifts-for-ultimate-comfort-in-2026/hero.webp",
+    "word_count_before": 363,
+    "word_count_after": 1774,
+    "depth_modules_applied": [
+      {
+        "name": "why_this_list",
+        "added_words_estimate": 116,
+        "notes": "Rewrote Why this list (upgrade)."
+      },
+      {
+        "name": "how_we_chose",
+        "added_words_estimate": 218,
+        "notes": "Added How we chose (upgrade)."
+      },
+      {
+        "name": "quick_picks",
+        "added_words_estimate": 163,
+        "notes": "Added Quick picks."
+      },
+      {
+        "name": "buyers_guide",
+        "added_words_estimate": 218,
+        "notes": "Added Buyer’s guide (upgrade)."
+      },
+      {
+        "name": "faqs",
+        "added_words_estimate": 240,
+        "notes": "Added FAQs (upgrade)."
+      },
+      {
+        "name": "alternatives",
+        "added_words_estimate": 212,
+        "notes": "Added Alternatives worth considering (upgrade)."
+      },
+      {
+        "name": "care_and_maintenance",
+        "added_words_estimate": 244,
+        "notes": "Added Care and maintenance (upgrade)."
+      }
+    ],
+    "title_candidates_top3": []
+  },
+  {
+    "date": "2026-01-12",
+    "title": "Top Eco-Friendly and Safe Baby Sleep Products for New Parents in 2026",
+    "topic": "Top Eco-Friendly and Safe Baby Sleep Products for New Parents in 2026",
+    "category": "parenting_and_family",
+    "audience": "New and expecting parents in the US looking for safe, sustainable baby sleep solutions",
+    "file": "site/src/content/posts/2026-01-12-top-eco-friendly-and-safe-baby-sleep-products-for-new-parents-in-2026.md",
+    "product_count": 7,
+    "heroImage": "/images/posts/2026-01-12-top-eco-friendly-and-safe-baby-sleep-products-for-new-parents-in-2026/hero.webp",
+    "word_count_before": 403,
+    "word_count_after": 1840,
+    "depth_modules_applied": [
+      {
+        "name": "why_this_list",
+        "added_words_estimate": 113,
+        "notes": "Rewrote Why this list (upgrade)."
+      },
+      {
+        "name": "how_we_chose",
+        "added_words_estimate": 211,
+        "notes": "Added How we chose (upgrade)."
+      },
+      {
+        "name": "quick_picks",
+        "added_words_estimate": 210,
+        "notes": "Added Quick picks."
+      },
+      {
+        "name": "buyers_guide",
+        "added_words_estimate": 216,
+        "notes": "Added Buyer’s guide (upgrade)."
+      },
+      {
+        "name": "faqs",
+        "added_words_estimate": 223,
+        "notes": "Added FAQs (upgrade)."
+      },
+      {
+        "name": "alternatives",
+        "added_words_estimate": 224,
+        "notes": "Added Alternatives worth considering (upgrade)."
+      },
+      {
+        "name": "care_and_maintenance",
+        "added_words_estimate": 240,
+        "notes": "Added Care and maintenance (upgrade)."
+      }
+    ],
+    "title_candidates_top3": []
+  },
+  {
+    "date": "2026-01-12",
+    "title": "Winter Hiking Gear for Safe and Comfortable Outdoor Adventures in 2026",
+    "topic": "Winter Hiking Gear for Safe and Comfortable Outdoor Adventures in 2026",
+    "category": "outdoors_and_travel",
+    "audience": "Outdoor enthusiasts and casual hikers looking for reliable winter hiking equipment",
+    "file": "site/src/content/posts/2026-01-12-winter-hiking-gear-for-safe-and-comfortable-outdoor-adventures-in-2026.md",
+    "product_count": 8,
+    "heroImage": "/images/posts/2026-01-12-winter-hiking-gear-for-safe-and-comfortable-outdoor-adventures-in-2026/hero.webp",
+    "word_count_before": 369,
+    "word_count_after": 1767,
+    "depth_modules_applied": [
+      {
+        "name": "why_this_list",
+        "added_words_estimate": 111,
+        "notes": "Rewrote Why this list (upgrade)."
+      },
+      {
+        "name": "how_we_chose",
+        "added_words_estimate": 224,
+        "notes": "Added How we chose (upgrade)."
+      },
+      {
+        "name": "quick_picks",
+        "added_words_estimate": 163,
+        "notes": "Added Quick picks."
+      },
+      {
+        "name": "buyers_guide",
+        "added_words_estimate": 185,
+        "notes": "Added Buyer’s guide (upgrade)."
+      },
+      {
+        "name": "faqs",
+        "added_words_estimate": 247,
+        "notes": "Added FAQs (upgrade)."
+      },
+      {
+        "name": "alternatives",
+        "added_words_estimate": 224,
+        "notes": "Added Alternatives worth considering (upgrade)."
+      },
+      {
+        "name": "care_and_maintenance",
+        "added_words_estimate": 244,
+        "notes": "Added Care and maintenance (upgrade)."
+      }
+    ],
+    "title_candidates_top3": [
+      {
+        "title": "Winter Hiking Gear for Safe and Comfortable Outdoor Adventures in 2026",
+        "archetype": "plain",
+        "score": 70.0,
+        "reasons": [
+          "Primary keyword match",
+          "Somewhat similar to existing title"
+        ]
+      }
+    ]
+  },
+  {
+    "date": "2026-01-12",
+    "title": "indoor air purifiers and humidifiers for winter home comfort",
+    "topic": "indoor air purifiers and humidifiers for winter home comfort",
+    "category": "home_and_kitchen",
+    "audience": "homeowners and renters looking to improve indoor air quality and comfort during winter",
+    "file": "site/src/content/posts/2026-01-12-indoor-air-purifiers-and-humidifiers-for-winter-home-comfort.md",
+    "product_count": 7,
+    "heroImage": "/images/posts/2026-01-12-indoor-air-purifiers-and-humidifiers-for-winter-home-comfort/hero.webp",
+    "word_count_before": 394,
+    "word_count_after": 1637,
+    "depth_modules_applied": [
+      {
+        "name": "why_this_list",
+        "added_words_estimate": 127,
+        "notes": "Rewrote Why this list (upgrade)."
+      },
+      {
+        "name": "how_we_chose",
+        "added_words_estimate": 224,
+        "notes": "Added How we chose (upgrade)."
+      },
+      {
+        "name": "quick_picks",
+        "added_words_estimate": 190,
+        "notes": "Added Quick picks."
+      },
+      {
+        "name": "buyers_guide",
+        "added_words_estimate": 219,
+        "notes": "Added Buyer’s guide (upgrade)."
+      },
+      {
+        "name": "faqs",
+        "added_words_estimate": 260,
+        "notes": "Added FAQs (upgrade)."
+      },
+      {
+        "name": "alternatives",
+        "added_words_estimate": 223,
+        "notes": "Added Alternatives worth considering (upgrade)."
+      }
+    ],
+    "title_candidates_top3": [
+      {
+        "title": "indoor air purifiers and humidifiers for winter home comfort",
+        "archetype": "plain",
+        "score": 100.0,
+        "reasons": [
+          "Primary keyword match",
+          "Distinct from existing titles"
+        ]
+      },
+      {
+        "title": "Picking indoor air purifiers and humidifiers for winter home comfort",
+        "archetype": "choosing",
+        "score": 78.65,
+        "reasons": [
+          "Primary keyword match",
+          "Distinct from existing titles"
+        ]
+      }
+    ]
+  },
+  {
+    "date": "2026-01-12",
+    "title": "winter-friendly indoor activities and gear for toddlers",
+    "topic": "winter-friendly indoor activities and gear for toddlers",
+    "category": "parenting_and_family",
+    "audience": "parents of toddlers living in cold climates",
+    "file": "site/src/content/posts/2026-01-12-winter-friendly-indoor-activities-and-gear-for-toddlers.md",
+    "product_count": 8,
+    "heroImage": "/images/posts/2026-01-12-winter-friendly-indoor-activities-and-gear-for-toddlers/hero.webp",
+    "word_count_before": 434,
+    "word_count_after": 1635,
+    "depth_modules_applied": [
+      {
+        "name": "why_this_list",
+        "added_words_estimate": 132,
+        "notes": "Rewrote Why this list (upgrade)."
+      },
+      {
+        "name": "how_we_chose",
+        "added_words_estimate": 203,
+        "notes": "Added How we chose (upgrade)."
+      },
+      {
+        "name": "quick_picks",
+        "added_words_estimate": 182,
+        "notes": "Added Quick picks."
+      },
+      {
+        "name": "buyers_guide",
+        "added_words_estimate": 200,
+        "notes": "Added Buyer’s guide (upgrade)."
+      },
+      {
+        "name": "faqs",
+        "added_words_estimate": 267,
+        "notes": "Added FAQs (upgrade)."
+      },
+      {
+        "name": "alternatives",
+        "added_words_estimate": 217,
+        "notes": "Added Alternatives worth considering (upgrade)."
+      }
+    ],
+    "title_candidates_top3": [
+      {
+        "title": "winter-friendly indoor activities and gear for toddlers",
+        "archetype": "plain",
+        "score": 100.0,
+        "reasons": [
+          "Primary keyword match",
+          "Distinct from existing titles"
+        ]
+      },
+      {
+        "title": "Picking winter-friendly indoor activities and gear for toddlers",
+        "archetype": "choosing",
+        "score": 93.86,
+        "reasons": [
+          "Primary keyword match",
+          "Distinct from existing titles"
+        ]
+      }
+    ]
   }
 ]

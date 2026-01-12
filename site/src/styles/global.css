@@ -1,33 +1,61 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* site/src/styles/global.css */
 
-/* Editorial polish */
+:root {
+  color-scheme: light;
+}
 
 html {
   scroll-behavior: smooth;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-feature-settings: "liga" 1, "kern" 1;
+  margin: 0;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    "Apple Color Emoji",
+    "Segoe UI Emoji";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  color: rgba(17, 24, 39, 0.92);
+  background: #f7f7f8;
 }
 
-.prose-premium {
+img {
   max-width: 100%;
+  height: auto;
 }
 
-.prose-premium h2 {
-  font-weight: 600;
-  letter-spacing: -0.01em;
+/* Make anchor jumps feel nice with sticky header */
+:target {
+  scroll-margin-top: 84px;
 }
 
-.prose-premium h3 {
-  font-weight: 600;
+/* Basic link styling */
+a {
+  color: inherit;
 }
 
-.hero-gradient {
-  background:
-    radial-gradient(1200px circle at 10% 10%, rgba(99, 102, 241, 0.10), transparent 40%),
-    radial-gradient(1000px circle at 90% 20%, rgba(59, 130, 246, 0.10), transparent 45%),
-    linear-gradient(to bottom, #ffffff, #f8fafc);
+/* Optional: nicer focus ring */
+:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.7);
+  outline-offset: 3px;
+  border-radius: 10px;
 }
+
+/* Optional: keep long strings from breaking layout */
+pre, code {
+  overflow-wrap: break-word;
+}
+

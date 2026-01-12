@@ -21,10 +21,16 @@ const posts = defineCollection({
     products: z.array(
       z.object({
         title: z.string(),
-        url: z.string().url(),
-        price: z.string(),
-        rating: z.number(),
-        reviews_count: z.number(),
+
+        // Option B: available now (used later to look up real products)
+        amazon_search_query: z.string().optional().nullable(),
+
+        // Real commerce fields (nullable until you have an API)
+        url: z.string().url().optional().nullable(),
+        price: z.string().optional().nullable(),
+        rating: z.number().optional().nullable(),
+        reviews_count: z.number().optional().nullable(),
+
         description: z.string(),
       })
     ),

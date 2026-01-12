@@ -26,6 +26,17 @@ PLACEHOLDER_HERO_PATH = PUBLIC_IMAGES_DIR / "placeholder-hero.webp"
 DEFAULT_IMAGE_CREDIT_NAME = None  # e.g. "Unsplash"
 DEFAULT_IMAGE_CREDIT_URL = None   # e.g. "https://unsplash.com/photos/abc123"
 
+# Global toggle for product data handling:
+# - OPTION_B_MODE = False (default/Option A): assume a real Amazon API or
+#   equivalent source is available and product metadata (rating, review count,
+#   price, URL, etc.) should normally be present and can be used for filtering.
+# - OPTION_B_MODE = True  (Option B): run in "no real Amazon API yet" mode where
+#   product metadata may be missing (None). Filtering and rendering logic must
+#   tolerate absent rating/review/price/URL fields and avoid treating this as
+#   an error. Enable this in local/dev or placeholder environments; disable it
+#   once the real product API is wired up for production use.
+OPTION_B_MODE = True
+
 
 def slugify(text: str) -> str:
     text = text.lower().strip()
@@ -102,6 +113,36 @@ def estimate_word_count(text: str) -> int:
     return len((text or "").strip().split())
 
 
+def product_passes_filter(p) -> bool:
+    """
+    In Option B mode we don't have real rating/reviews yet, so we keep everything.
+    Once you have an API, set OPTION_B_MODE=False to enforce quality thresholds.
+    """
+    if OPTION_B_MODE:
+        return True
+
+    return (
+        p.rating is not None
+        and p.reviews_count is not None
+        and float(p.rating) >= 4.0
+        and int(p.reviews_count) >= 250
+    )
+
+
+def safe_float(x):
+    try:
+        return float(x) if x is not None else None
+    except Exception:
+        return None
+
+
+def safe_int(x):
+    try:
+        return int(x) if x is not None else None
+    except Exception:
+        return None
+
+
 def main():
     print(">>> generate_blog_post.py started")
 
@@ -128,22 +169,32 @@ def main():
         return
 
     # 3) Filter + normalize + convert to JSON-safe dicts
-    products = [
-        {
-            "title": normalize_text(p.title),
-            "url": str(p.url),
-            "price": str(p.price),
-            "rating": float(p.rating),
-            "reviews_count": int(p.reviews_count),
-            "description": normalize_text(p.description),
-        }
-        for p in product_models
-        if float(p.rating) >= 4.0 and int(p.reviews_count) >= 250
-    ]
+    products = []
+    for p in product_models:
+        if not product_passes_filter(p):
+            continue
 
+        products.append({
+            "title": normalize_text(p.title),
+            "url": str(p.url) if getattr(p, "url", None) is not None else None,
+            "price": str(p.price) if getattr(p, "price", None) is not None else None,
+            "rating": safe_float(getattr(p, "rating", None)),
+            "reviews_count": safe_int(getattr(p, "reviews_count", None)),
+            "description": normalize_text(p.description),
+            # Optional field if you added it to Product schema:
+            "amazon_search_query": getattr(p, "amazon_search_query", None),
+        })
+
+    # Sorting:
+    # - With real data, this sorts by rating + reviews.
+    # - With Option B (None values), those will sort to the bottom.
     products = sorted(
         products,
-        key=lambda p: (p.get("rating", 0), p.get("reviews_count", 0)),
+        key=lambda p: (
+            p.get("rating") is not None,          # True sorts after False, so invert by using is not None first
+            p.get("rating") or 0,
+            p.get("reviews_count") or 0,
+        ),
         reverse=True,
     )
 

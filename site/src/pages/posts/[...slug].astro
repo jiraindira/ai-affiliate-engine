@@ -1,7 +1,7 @@
 ---
 import { getCollection } from "astro:content";
-import { Image } from "astro:assets";
 import SiteLayout from "../../layouts/SiteLayout.astro";
+import PostLayout from "../../layouts/PostLayout.astro";
 import ProductListItem from "../../components/ProductListItem.astro";
 import { getPostHeroImage } from "../../lib/postImages";
 
@@ -40,6 +40,41 @@ function prettyCategory(s) {
     .replace(/\bAnd\b/g, "&");
 }
 
+function slugifyHeading(text) {
+  return String(text || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[’']/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+}
+
+function estimateReadingTimeFromMarkdown(md) {
+  const text = String(md || "")
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`[^`]*`/g, " ")
+    .replace(/[#>*_~]/g, " ");
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  const mins = Math.max(1, Math.round(words / 220));
+  return mins;
+}
+
+function extractTocFromMarkdown(md) {
+  const lines = String(md || "").split("\n");
+  const toc = [];
+  for (const line of lines) {
+    const m = line.match(/^##\s+(.+)\s*$/);
+    if (!m) continue;
+    const text = m[1].trim();
+    // Skip obvious non-content headings if you want:
+    // if (text.toLowerCase() === "top picks") continue;
+    const id = slugifyHeading(text);
+    toc.push({ text, id });
+  }
+  return toc;
+}
+
 const dateLabel = publishedAt ? formatDate(publishedAt) : "";
 const categoryLabel = category ? prettyCategory(category) : "";
 
@@ -52,7 +87,7 @@ const heroImageRaw =
     : FALLBACK_HERO;
 
 const heroAlt =
-  (typeof post?.data?.heroAlt === "string" && post.data.heroAlt.trim().length > 0)
+  typeof post?.data?.heroAlt === "string" && post.data.heroAlt.trim().length > 0
     ? post.data.heroAlt.trim()
     : post?.data?.title ?? "";
 
@@ -61,7 +96,16 @@ const heroAsset = !isPublicHero ? getPostHeroImage(heroImageRaw) : null;
 
 // SEO / sharing
 const canonical = `/posts/${post.slug}`;
-const ogImage = heroImageRaw; // hero or placeholder, always present now
+const ogImage = heroImageRaw;
+
+// Build TOC + reading time from raw markdown body (available on content entries)
+const rawBody = post.body ?? "";
+const toc = extractTocFromMarkdown(rawBody);
+const readingTime = estimateReadingTimeFromMarkdown(rawBody);
+
+// We also need to ensure headings in rendered markdown have matching ids.
+// Astro/markdown usually generates ids, but to be safe we add a small CSS offset target handling
+// and we anchor our pick section manually.
 ---
 
 <SiteLayout
@@ -70,116 +114,49 @@ const ogImage = heroImageRaw; // hero or placeholder, always present now
   canonical={canonical}
   ogImage={ogImage}
 >
-  <div class="max-w-6xl mx-auto px-6 pt-8 pb-16">
-    <header class="max-w-none w-full">
-      <div class="text-xs text-gray-500">
-        {dateLabel}
-        {categoryLabel ? <span> · {categoryLabel}</span> : null}
+  <PostLayout
+    title={post.data.title}
+    description={post.data.description}
+    publishedAt={publishedAt}
+    category={category}
+    audience={post.data.audience}
+    heroImage={heroImageRaw}
+    heroAlt={heroAlt}
+    imageCreditName={post.data.imageCreditName}
+    imageCreditUrl={post.data.imageCreditUrl}
+    readingTime={readingTime}
+    toc={toc}
+  >
+    <Content />
+
+    <hr />
+
+    <section id="top-picks" class="picks-block">
+      <h2>Top picks</h2>
+      <p class="picks-sub">
+        A practical short-list with direct links.
+      </p>
+
+      <div class="picks-list">
+        {picks.map((p, idx) => (
+          <div id={`pick-${idx + 1}`} class="pick-anchor">
+            <ProductListItem product={p} index={idx + 1} />
+          </div>
+        ))}
       </div>
+    </section>
 
-      <h1 class="mt-4 text-4xl sm:text-5xl font-semibold text-gray-900 leading-[1.12] tracking-[-0.015em]">
-        {post.data.title}
-      </h1>
-
-      {post.data.description && (
-        <p class="mt-5 text-base sm:text-lg text-gray-700 leading-relaxed">
-          {post.data.description}
-        </p>
-      )}
-
-      <div class="mt-8">
-        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-          {isPublicHero ? (
-            <img
-              src={heroImageRaw}
-              alt={heroAlt}
-              loading="eager"
-              decoding="async"
-              class="h-auto w-full object-cover"
-            />
-          ) : heroAsset ? (
-            <Image
-              src={heroAsset}
-              alt={heroAlt}
-              width={heroAsset.width}
-              height={heroAsset.height}
-              class="h-auto w-full object-cover"
-              sizes="(min-width: 1024px) 960px, 100vw"
-              loading="eager"
-              decoding="async"
-            />
-          ) : (
-            <img
-              src={FALLBACK_HERO}
-              alt={heroAlt}
-              loading="eager"
-              decoding="async"
-              class="h-auto w-full object-cover"
-            />
-          )}
-        </div>
-
-        {post.data.imageCreditName ? (
-          <div class="mt-2 text-xs text-gray-500">
-            Image credit:{" "}
-            {post.data.imageCreditUrl ? (
-              <a
-                href={post.data.imageCreditUrl}
-                class="underline underline-offset-2 hover:text-gray-700"
-              >
-                {post.data.imageCreditName}
-              </a>
-            ) : (
-              <span>{post.data.imageCreditName}</span>
-            )}
-          </div>
-        ) : null}
-      </div>
-    </header>
-
-    <hr class="mt-10 border-t-2 border-gray-900/25" />
-
-    <div class="mt-10 grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-12 items-start">
-      <main>
-        <article class="prose-premium prose max-w-none">
-          <Content />
-        </article>
-
-        <hr class="mt-12 border-t-2 border-gray-900/25" />
-
-        <section id="picks" class="mt-12">
-          <h2 class="text-xl font-semibold text-gray-900">Top picks</h2>
-          <p class="mt-2 text-sm text-gray-600">
-            A practical short-list with direct links.
-          </p>
-
-          <div class="mt-8 space-y-6">
+    <Fragment slot="sidebar">
+      <div class="side-stack">
+        <div class="sidecard-lite">
+          <div class="side-title">Quick picks</div>
+          <ol class="quick-list">
             {picks.map((p, idx) => (
-              <div id={`pick-${idx + 1}`} class="scroll-mt-24">
-                <ProductListItem product={p} index={idx + 1} />
-              </div>
-            ))}
-          </div>
-        </section>
-      </main>
-
-      <aside class="hidden lg:block lg:sticky lg:top-6">
-        <div class="rounded-2xl border border-gray-200 bg-white p-5">
-          <div class="text-sm font-bold tracking-tight text-gray-900">
-            Quick picks
-          </div>
-          <hr class="mt-4 border-t-2 border-gray-900/25" />
-
-          <ol class="mt-5 space-y-3 text-sm">
-            {picks.map((p, idx) => (
-              <li>
-                <a
-                  href={`#pick-${idx + 1}`}
-                  class="block font-semibold text-gray-900 hover:text-blue-700 leading-snug"
-                >
-                  {idx + 1}. {p.title}
+              <li class="quick-item">
+                <a href={`#pick-${idx + 1}`} class="quick-link">
+                  <span class="quick-num">{idx + 1}.</span> {p.title}
                 </a>
-                <div class="mt-1 text-xs text-gray-500">
+                <div class="quick-meta">
                   {typeof p.rating === "number" ? (
                     <span>{p.rating.toFixed(1)}★</span>
                   ) : null}
@@ -194,16 +171,86 @@ const ogImage = heroImageRaw; // hero or placeholder, always present now
             ))}
           </ol>
 
-          <div class="mt-6">
-            <a
-              href="#picks"
-              class="text-sm font-semibold text-blue-600 hover:text-blue-700"
-            >
-              Jump to list →
-            </a>
-          </div>
+          <a href="#top-picks" class="jump-link">Jump to list →</a>
         </div>
-      </aside>
-    </div>
-  </div>
+      </div>
+    </Fragment>
+
+    <style>
+      .picks-block {
+        margin-top: 28px;
+      }
+      .picks-sub {
+        margin-top: 8px;
+        color: rgba(55, 65, 81, 0.85);
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      .picks-list {
+        margin-top: 18px;
+        display: grid;
+        gap: 18px;
+      }
+      .pick-anchor {
+        scroll-margin-top: 90px;
+      }
+
+      .side-stack {
+        display: grid;
+        gap: 12px;
+      }
+      .sidecard-lite {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(17, 24, 39, 0.08);
+        border-radius: 18px;
+        padding: 16px;
+      }
+      .side-title {
+        font-size: 13px;
+        font-weight: 750;
+        color: rgba(17, 24, 39, 0.9);
+      }
+      .quick-list {
+        margin: 12px 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 10px;
+        font-size: 13px;
+      }
+      .quick-link {
+        text-decoration: none;
+        color: rgba(17, 24, 39, 0.86);
+        font-weight: 650;
+        line-height: 1.25;
+      }
+      .quick-link:hover {
+        color: rgb(37, 99, 235);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .quick-num {
+        color: rgba(55, 65, 81, 0.65);
+        font-weight: 700;
+        margin-right: 4px;
+      }
+      .quick-meta {
+        margin-top: 4px;
+        color: rgba(55, 65, 81, 0.7);
+        font-size: 12px;
+      }
+      .jump-link {
+        display: inline-block;
+        margin-top: 12px;
+        font-size: 13px;
+        font-weight: 650;
+        color: rgb(37, 99, 235);
+        text-decoration: none;
+      }
+      .jump-link:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+    </style>
+  </PostLayout>
 </SiteLayout>

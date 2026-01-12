@@ -8,7 +8,7 @@ const {
   title = taxonomy.brand.name,
   description = taxonomy.brand.tagline,
   canonical, // optional relative or absolute
-  ogImage, // optional absolute or relative URL to an image (e.g. /og/my-post.png or https://...)
+  ogImage, // optional absolute or relative URL to an image
 } = Astro.props;
 
 const canonicalUrl = canonical
@@ -45,38 +45,190 @@ const ogImageUrl =
     <slot name="head" />
   </head>
 
-  <body class="bg-gray-50 text-gray-900">
-    <header class="bg-white border-b">
-      <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <a href="/" class="flex items-center gap-3">
-          <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-gray-50">
-            <svg viewBox="0 0 24 24" class="h-5 w-5 text-gray-800" aria-hidden="true">
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="site-container header-row">
+        <a href="/" class="brand" aria-label={`${taxonomy.brand.name} home`}>
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" class="brand-icon" aria-hidden="true">
               <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8" />
               <circle cx="12" cy="12" r="2" fill="currentColor" />
-              <path d="M12 4v2M20 12h-2M12 20v-2M4 12h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              <path
+                d="M12 4v2M20 12h-2M12 20v-2M4 12h2"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+              />
             </svg>
           </span>
 
-          <span class="leading-tight">
-            <span class="block font-bold tracking-tight text-lg">{taxonomy.brand.name}</span>
-            <span class="block text-xs text-gray-500">{taxonomy.brand.tagline}</span>
+          <span class="brand-text">
+            <span class="brand-name">{taxonomy.brand.name}</span>
+            <span class="brand-tagline">{taxonomy.brand.tagline}</span>
           </span>
         </a>
 
-        <nav class="flex items-center gap-4 text-sm">
-          <a href="/posts" class="text-gray-600 hover:text-gray-900 font-semibold">Guides</a>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/posts" class="nav-link">Guides</a>
         </nav>
       </div>
     </header>
 
-    <main>
+    <main id="main" class="site-main">
       <slot />
     </main>
 
-    <footer class="mt-16 border-t bg-white">
-      <div class="max-w-6xl mx-auto px-6 py-10 text-sm text-gray-500">
-        © {new Date().getFullYear()} {taxonomy.brand.name} · Independent product recommendations
+    <footer class="site-footer">
+      <div class="site-container footer-row">
+        <div class="footer-left">
+          © {new Date().getFullYear()} {taxonomy.brand.name}
+        </div>
+        <div class="footer-right">
+          Independent product recommendations
+        </div>
       </div>
     </footer>
   </body>
 </html>
+
+<style>
+  /* Keep layout concerns here (chrome + rhythm), not post styling */
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+  }
+
+  .site-container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .header-row {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    min-width: 0;
+  }
+
+  .brand-mark {
+    height: 40px;
+    width: 40px;
+    border-radius: 14px;
+    border: 1px solid rgba(17, 24, 39, 0.10);
+    background: rgba(17, 24, 39, 0.03);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+
+  .brand-icon {
+    height: 20px;
+    width: 20px;
+    color: rgba(17, 24, 39, 0.85);
+  }
+
+  .brand-text {
+    display: grid;
+    line-height: 1.1;
+    min-width: 0;
+  }
+
+  .brand-name {
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    font-size: 16px;
+    color: rgba(17, 24, 39, 0.92);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .brand-tagline {
+    font-size: 12px;
+    color: rgba(55, 65, 81, 0.75);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .nav-link {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(55, 65, 81, 0.90);
+    text-decoration: none;
+    padding: 8px 10px;
+    border-radius: 12px;
+  }
+
+  .nav-link:hover {
+    background: rgba(17, 24, 39, 0.04);
+    color: rgba(17, 24, 39, 0.95);
+  }
+
+  .site-main {
+    /* Adds vertical spacing to visually separate page content and PostLayout cards from the header */
+    padding: 10px 0 0;
+    background:
+      radial-gradient(1200px 600px at 20% -10%, rgba(37, 99, 235, 0.08), transparent 60%),
+      radial-gradient(900px 500px at 90% 0%, rgba(17, 24, 39, 0.05), transparent 55%),
+      #f7f7f8;
+    min-height: 70vh;
+  }
+
+  .site-footer {
+    margin-top: 56px;
+    border-top: 1px solid rgba(17, 24, 39, 0.08);
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  .footer-row {
+    padding: 22px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    justify-content: space-between;
+    color: rgba(55, 65, 81, 0.75);
+    font-size: 13px;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 10px;
+    background: #111827;
+    color: white;
+    padding: 10px 12px;
+    border-radius: 12px;
+    z-index: 50;
+    text-decoration: none;
+  }
+
+  .skip-link:focus {
+    left: 16px;
+  }
+</style>

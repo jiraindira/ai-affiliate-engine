@@ -12,153 +12,423 @@ const {
   heroAlt,
   imageCreditName,
   imageCreditUrl,
+  readingTime,
+  toc = [],
 } = Astro.props;
 
 // Detect whether heroImage is a public URL (/images/...) or an asset path
-const isPublicHero =
-  typeof heroImage === "string" && heroImage.startsWith("/");
+const isPublicHero = typeof heroImage === "string" && heroImage.startsWith("/");
 
 // Only resolve asset images via astro:assets
-const heroAsset =
-  !isPublicHero && heroImage ? getPostHeroImage(heroImage) : null;
+const heroAsset = !isPublicHero && heroImage ? getPostHeroImage(heroImage) : null;
 
 const safeHeroAlt = heroAlt ?? title;
 
 const dateLabel =
   publishedAt instanceof Date
-    ? publishedAt.toLocaleDateString(undefined, {
+    ? publishedAt.toLocaleDateString("en-GB", {
         year: "numeric",
         month: "long",
         day: "numeric",
       })
     : publishedAt
-    ? String(publishedAt)
-    : "—";
+      ? String(publishedAt)
+      : "—";
 
-const categoryLabel = String(category).replaceAll("_", " ");
+const categoryLabel = String(category || "").replaceAll("_", " ").trim();
+const showHero = Boolean(isPublicHero || heroAsset);
+const showToc = Array.isArray(toc) && toc.length > 0;
 ---
 
-<section class="bg-white rounded-2xl shadow-sm border p-8">
-  <div class="max-w-3xl">
-    <p class="text-sm text-gray-500 mb-3">
-      {dateLabel} · <span class="capitalize">{categoryLabel}</span>
-    </p>
-
-    <h1 class="text-4xl md:text-5xl font-semibold tracking-tight leading-tight">
-      {title}
-    </h1>
-
-    <p class="mt-4 text-lg text-gray-600">
-      {description}
-    </p>
-
-    <div class="mt-6 flex flex-wrap gap-3">
-      <span class="text-xs bg-gray-100 border rounded-full px-3 py-1 text-gray-700 max-w-full">
-        Audience: {audience}
-      </span>
-      <span class="text-xs bg-gray-100 border rounded-full px-3 py-1 text-gray-700">
-        Updated weekly
-      </span>
-      <span class="text-xs bg-gray-100 border rounded-full px-3 py-1 text-gray-700">
-        High-rating picks
-      </span>
-    </div>
-  </div>
-</section>
-
-{(isPublicHero || heroAsset) && (
-  <div class="mt-8">
-    <div class="overflow-hidden rounded-2xl border bg-white">
-      {isPublicHero ? (
-        <img
-          src={heroImage}
-          alt={safeHeroAlt}
-          loading="eager"
-          decoding="async"
-          class="w-full h-auto object-cover"
-        />
-      ) : (
-        <Image
-          src={heroAsset}
-          alt={safeHeroAlt}
-          width={heroAsset.width}
-          height={heroAsset.height}
-          class="w-full h-auto object-cover"
-          sizes="(min-width: 1024px) 960px, 100vw"
-          loading="eager"
-          decoding="async"
-        />
-      )}
+<section class="post-shell">
+  <header class="post-header">
+    <div class="post-meta">
+      <span class="post-date">{dateLabel}</span>
+      {categoryLabel ? <span class="post-dot">•</span> : null}
+      {categoryLabel ? <span class="post-cat">{categoryLabel}</span> : null}
+      {readingTime ? <span class="post-dot">•</span> : null}
+      {readingTime ? <span class="post-rt">{readingTime} min read</span> : null}
     </div>
 
-    {imageCreditName && (
-      <div class="mt-2 text-xs text-gray-500">
-        Image credit:{" "}
-        {imageCreditUrl ? (
-          <a
-            href={imageCreditUrl}
-            class="underline underline-offset-2 hover:text-gray-700"
-          >
-            {imageCreditName}
-          </a>
-        ) : (
-          <span>{imageCreditName}</span>
+    <h1 class="post-title">{title}</h1>
+
+    {description ? <p class="post-desc">{description}</p> : null}
+
+    <div class="post-chips">
+      {audience ? <span class="chip">Audience: {audience}</span> : null}
+      <span class="chip">Curated picks</span>
+      <span class="chip">Skimmable + practical</span>
+    </div>
+
+    {showHero && (
+      <figure class="hero">
+        <div class="hero-frame">
+          {isPublicHero ? (
+            <img
+              src={heroImage}
+              alt={safeHeroAlt}
+              loading="eager"
+              decoding="async"
+              class="hero-img"
+            />
+          ) : (
+            <Image
+              src={heroAsset}
+              alt={safeHeroAlt}
+              width={heroAsset.width}
+              height={heroAsset.height}
+              class="hero-img"
+              sizes="(min-width: 1024px) 960px, 100vw"
+              loading="eager"
+              decoding="async"
+            />
+          )}
+        </div>
+
+        {(imageCreditName || imageCreditUrl) && (
+          <figcaption class="hero-credit">
+            Image credit:{" "}
+            {imageCreditUrl ? (
+              <a href={imageCreditUrl} class="hero-credit-link">
+                {imageCreditName ?? "Source"}
+              </a>
+            ) : (
+              <span>{imageCreditName}</span>
+            )}
+          </figcaption>
         )}
-      </div>
+      </figure>
     )}
-  </div>
-)}
+  </header>
 
-<section class="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
-  <!-- Main article -->
-  <article class="lg:col-span-8">
-    <div class="bg-white rounded-2xl shadow-sm border p-8">
-      <div class="prose-premium">
-        <slot />
-      </div>
-    </div>
-
-    <!-- Trust / disclosure -->
-    <div class="mt-6 text-sm text-gray-600 bg-white rounded-2xl border p-6">
-      <p class="font-semibold text-gray-800 mb-1">Affiliate disclosure</p>
-      <p>
-        Some links may be affiliate links. If you buy through them, we may earn a
-        commission at no extra cost to you. We only include items that meet our
-        quality thresholds.
-      </p>
-    </div>
-  </article>
-
-  <!-- Sidebar -->
-  <aside class="lg:col-span-4">
-    <slot name="sidebar">
-      <div class="bg-white rounded-2xl shadow-sm border p-6 sticky top-6">
-        <p class="font-semibold mb-3">Quick take</p>
-        <ul class="text-sm text-gray-700 space-y-2">
-          <li>
-            Curated for: <span class="font-medium">{audience}</span>
-          </li>
-          <li>
-            Category: <span class="font-medium">{categoryLabel}</span>
-          </li>
-          <li>
-            Focus: <span class="font-medium">high-rated + widely reviewed</span>
-          </li>
-        </ul>
-
-        <div class="mt-6">
-          <a
-            href="#top-picks"
-            class="block w-full text-center bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-blue-700 transition"
-          >
-            Jump to Top Picks
-          </a>
-          <p class="text-xs text-gray-500 mt-3">
-            Tip: scan the list first, then read the rationale if you want the
-            “why”.
-          </p>
+  <div class="post-grid">
+    <main class="post-main">
+      <div class="post-article">
+        <div class="prose-premium">
+          <slot />
         </div>
       </div>
-    </slot>
-  </aside>
+
+      <div class="post-disclosure">
+        <p class="disc-title">Affiliate disclosure</p>
+        <p class="disc-body">
+          Some links may be affiliate links. If you buy through them, we may earn a commission at no extra
+          cost to you. We only include items that meet our quality thresholds.
+        </p>
+      </div>
+    </main>
+
+    <aside class="post-aside">
+      <slot name="sidebar">
+        <div class="sidecard">
+          <div class="sidehead">On this page</div>
+
+          {showToc ? (
+            <nav class="toc">
+              <ol class="toc-list">
+                {toc.map((item) => (
+                  <li class="toc-item">
+                    <a class="toc-link" href={`#${item.id}`}>
+                      {item.text}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          ) : (
+            <p class="toc-empty">No table of contents is available for this page.</p>
+          )}
+
+          <div class="side-actions">
+            <a href="#top-picks" class="side-btn">Jump to Top Picks</a>
+            <p class="side-tip">
+              Tip: skim the picks first, then read the “Why this list” for more context on our recommendations.
+            </p>
+          </div>
+        </div>
+      </slot>
+    </aside>
+  </div>
 </section>
+
+<style>
+  .post-shell {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 28px 24px 64px;
+  }
+
+  .post-header {
+    background: #fff;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    border-radius: 18px;
+    padding: 26px;
+    box-shadow: 0 1px 0 rgba(17, 24, 39, 0.03);
+  }
+
+  .post-meta {
+    font-size: 12px;
+    color: rgba(55, 65, 81, 0.85);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    letter-spacing: 0.01em;
+  }
+
+  .post-dot {
+    opacity: 0.55;
+  }
+
+  .post-title {
+    margin-top: 14px;
+    font-size: clamp(30px, 3.4vw, 52px);
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+    color: #111827;
+    max-width: 26ch;
+    text-wrap: balance;
+    font-weight: 650;
+  }
+
+  .post-desc {
+    margin-top: 14px;
+    font-size: 17px;
+    line-height: 1.55;
+    color: rgba(55, 65, 81, 0.92);
+    max-width: 70ch;
+  }
+
+  .post-chips {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .chip {
+    font-size: 12px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(17, 24, 39, 0.10);
+    background: rgba(17, 24, 39, 0.03);
+    color: rgba(17, 24, 39, 0.78);
+    max-width: 100%;
+  }
+
+  .hero {
+    margin-top: 18px;
+  }
+
+  /* Editorial hero: fixed aspect ratio so images don't hijack the page */
+  .hero-frame {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(17, 24, 39, 0.10);
+    background: rgba(17, 24, 39, 0.02);
+    aspect-ratio: 16 / 9;
+  }
+
+  .hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .hero-credit {
+    margin-top: 8px;
+    font-size: 12px;
+    color: rgba(55, 65, 81, 0.75);
+  }
+
+  .hero-credit-link {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    color: inherit;
+  }
+
+  .hero-credit-link:hover {
+    color: rgba(17, 24, 39, 0.9);
+  }
+
+  .post-grid {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+
+  @media (min-width: 1024px) {
+    .post-grid {
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 22px;
+    }
+  }
+
+  .post-article {
+    background: #fff;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    border-radius: 18px;
+    padding: 26px;
+    box-shadow: 0 1px 0 rgba(17, 24, 39, 0.03);
+  }
+
+  .post-disclosure {
+    margin-top: 14px;
+    background: #fff;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    border-radius: 18px;
+    padding: 18px 20px;
+    color: rgba(55, 65, 81, 0.88);
+  }
+
+  .disc-title {
+    margin: 0 0 6px;
+    font-size: 13px;
+    font-weight: 650;
+    color: rgba(17, 24, 39, 0.9);
+  }
+
+  .disc-body {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .post-aside {
+    position: relative;
+  }
+
+  .sidecard {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 1px 0 rgba(17, 24, 39, 0.03);
+  }
+
+  @media (min-width: 1024px) {
+    .sidecard {
+      position: sticky;
+      top: 18px;
+    }
+  }
+
+  .sidehead {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(17, 24, 39, 0.9);
+    letter-spacing: -0.01em;
+  }
+
+  .toc {
+    margin-top: 12px;
+  }
+
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  .toc-link {
+    font-size: 13px;
+    line-height: 1.3;
+    color: rgba(17, 24, 39, 0.82);
+    text-decoration: none;
+  }
+
+  .toc-link:hover {
+    color: rgb(37, 99, 235);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .toc-empty {
+    margin-top: 10px;
+    font-size: 13px;
+    color: rgba(55, 65, 81, 0.75);
+  }
+
+  .side-actions {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(17, 24, 39, 0.08);
+  }
+
+  .side-btn {
+    display: block;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 650;
+    padding: 11px 12px;
+    border-radius: 14px;
+    background: rgb(37, 99, 235);
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .side-btn:hover {
+    background: rgb(29, 78, 216);
+  }
+
+  .side-tip {
+    margin: 10px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(55, 65, 81, 0.78);
+  }
+
+  /* Readable prose without relying on global typography plugins */
+  .prose-premium {
+    max-width: 72ch;
+    font-size: 16px;
+    line-height: 1.75;
+    color: rgba(17, 24, 39, 0.92);
+  }
+
+  .prose-premium :global(h2) {
+    margin-top: 28px;
+    margin-bottom: 10px;
+    font-size: 20px;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: rgba(17, 24, 39, 0.95);
+  }
+
+  .prose-premium :global(p) {
+    margin: 12px 0;
+  }
+
+  .prose-premium :global(ul),
+  .prose-premium :global(ol) {
+    margin: 12px 0 12px 20px;
+  }
+
+  .prose-premium :global(li) {
+    margin: 6px 0;
+  }
+
+  .prose-premium :global(a) {
+    color: rgb(37, 99, 235);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .prose-premium :global(code) {
+    font-size: 0.95em;
+    padding: 2px 6px;
+    border-radius: 8px;
+    background: rgba(17, 24, 39, 0.05);
+  }
+
+  .prose-premium :global(hr) {
+    margin: 26px 0;
+    border: none;
+    border-top: 1px solid rgba(17, 24, 39, 0.10);
+  }
+</style>
