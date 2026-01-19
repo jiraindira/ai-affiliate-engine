@@ -2310,5 +2310,185 @@
     "repair_attempted": false,
     "repair_changes": [],
     "qa_after_repair": null
+  },
+  {
+    "date": "2026-01-18",
+    "publishedAt": "2026-01-18T13:46:19Z",
+    "title_initial": "winter-friendly financial planning tools and apps for budgeting and saving",
+    "topic": "winter-friendly financial planning tools and apps for budgeting and saving",
+    "category": "finance_and_productivity",
+    "audience": "US adults looking to improve personal finance management during winter months",
+    "file": "site/src/content/posts/2026-01-18-winter-friendly-financial-planning-tools-and-apps-for-budgeting-and-saving.md",
+    "product_count": 7,
+    "heroImage": "/images/posts/2026-01-18-winter-friendly-financial-planning-tools-and-apps-for-budgeting-and-saving/hero.webp",
+    "word_count_before": 378,
+    "word_count_after": 1347,
+    "depth_modules_applied": [
+      {
+        "name": "intro",
+        "added_words_estimate": 97,
+        "notes": "Filled INTRO (upgrade)."
+      },
+      {
+        "name": "how_we_chose",
+        "added_words_estimate": 125,
+        "notes": "Filled HOW_WE_CHOSE (upgrade)."
+      },
+      {
+        "name": "alternatives",
+        "added_words_estimate": 138,
+        "notes": "Filled ALTERNATIVES (upgrade)."
+      },
+      {
+        "name": "product_writeups",
+        "added_words_estimate": 609,
+        "notes": "Filled 7 product writeups (upgrade)."
+      }
+    ],
+    "title_candidates_top3": [],
+    "qa_initial": {
+      "ok": false,
+      "strict": true,
+      "errors": [
+        "Missing skip-guidance (e.g., 'Skip it if…', 'Pass if…', 'Overkill if…') for one or more picks. {'missing_pick_numbers': [6]}"
+      ],
+      "warnings": [],
+      "issues": [
+        {
+          "rule_id": "RULE_MISSING_SKIP_IT_IF",
+          "level": "error",
+          "message": "Missing skip-guidance (e.g., 'Skip it if…', 'Pass if…', 'Overkill if…') for one or more picks.",
+          "meta": {
+            "missing_pick_numbers": [
+              6
+            ]
+          }
+        }
+      ],
+      "metrics": {
+        "placeholders_count": 0,
+        "products_count": 7,
+        "picks_count": 7,
+        "forbidden_testing_hits": 0,
+        "missing_space_after_punct_hits": 0
+      },
+      "mode": "block"
+    },
+    "repair_attempted": true,
+    "repair_changes": [
+      "Added skip-guidance sentence to Philips Hue White and Color Ambiance Smart Bulb Starter Kit pick."
+    ],
+    "qa_after_repair": {
+      "ok": true,
+      "strict": true,
+      "errors": [],
+      "warnings": [],
+      "issues": [],
+      "metrics": {
+        "placeholders_count": 0,
+        "products_count": 7,
+        "picks_count": 7,
+        "forbidden_testing_hits": 0,
+        "missing_space_after_punct_hits": 0
+      },
+      "mode": "block"
+    }
+  },
+  {
+    "date": "2026-01-19",
+    "publishedAt": "2026-01-19T20:02:36Z",
+    "title_initial": "Best winter hiking layers for Lapland",
+    "topic": "Best winter hiking layers for Lapland",
+    "category": "travel",
+    "audience": "UK readers",
+    "file": "site/src/content/posts/2026-01-19-best-winter-hiking-layers-for-lapland.md",
+    "product_count": 8,
+    "heroImage": "/images/posts/2026-01-19-best-winter-hiking-layers-for-lapland/hero.webp",
+    "word_count_before": 372,
+    "word_count_after": 1344,
+    "format_id": "top_picks",
+    "affiliate_provider": "mountain_warehouse",
+    "depth_modules_applied": [
+      {
+        "name": "intro",
+        "added_words_estimate": 81,
+        "notes": "Filled INTRO (upgrade)."
+      },
+      {
+        "name": "how_we_chose",
+        "added_words_estimate": 126,
+        "notes": "Filled HOW_WE_CHOSE (upgrade)."
+      },
+      {
+        "name": "alternatives",
+        "added_words_estimate": 161,
+        "notes": "Filled ALTERNATIVES (upgrade)."
+      },
+      {
+        "name": "product_writeups",
+        "added_words_estimate": 662,
+        "notes": "Filled 8 product writeups (upgrade)."
+      },
+      {
+        "name": "edit_pass",
+        "added_words_estimate": 604,
+        "notes": "Applied whole-document editor pass (upgrade)."
+      }
+    ],
+    "title_candidates_top3": [],
+    "qa_initial": {
+      "ok": false,
+      "strict": true,
+      "errors": [
+        "Intro section appears empty.",
+        "No pick writeups extracted under '## The picks'."
+      ],
+      "warnings": [],
+      "issues": [
+        {
+          "rule_id": "RULE_EMPTY_INTRO",
+          "level": "error",
+          "message": "Intro section appears empty.",
+          "meta": {}
+        },
+        {
+          "rule_id": "RULE_NO_PICKS_EXTRACTED",
+          "level": "error",
+          "message": "No pick writeups extracted under '## The picks'.",
+          "meta": {}
+        }
+      ],
+      "metrics": {
+        "placeholders_count": 0,
+        "products_count": 8,
+        "picks_count": 0,
+        "forbidden_testing_hits": 0,
+        "missing_space_after_punct_hits": 0
+      },
+      "mode": "block"
+    },
+    "repair_attempted": true,
+    "repair_changes": [
+      "Added missing newline after ## Intro heading and before intro text",
+      "Inserted actual intro text under ## Intro to avoid empty section",
+      "Added pick writeups under ## The picks section matching each product",
+      "Ensured spacing between headings and paragraphs is correct",
+      "Removed extra spaces or line breaks to keep structure consistent"
+    ],
+    "qa_after_repair": {
+      "ok": true,
+      "strict": true,
+      "errors": [],
+      "warnings": [],
+      "issues": [],
+      "metrics": {
+        "placeholders_count": 0,
+        "products_count": 8,
+        "picks_count": 8,
+        "forbidden_testing_hits": 0,
+        "missing_space_after_punct_hits": 0
+      },
+      "mode": "block"
+    }
   }
 ]

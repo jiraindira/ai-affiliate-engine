@@ -1,3 +1,14 @@
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import shutil
+from datetime import date, datetime, timezone
+from pathlib import Path
+from types import SimpleNamespace
+
 from agents.topic_agent import TopicSelectionAgent
 from agents.product_agent import ProductDiscoveryAgent
 from agents.title_optimization_agent import TitleOptimizationAgent
@@ -6,6 +17,7 @@ from agents.image_generation_agent import ImageGenerationAgent
 from agents.final_title_agent import FinalTitleAgent, FinalTitleConfig
 from agents.preflight_qa_agent import PreflightQAAgent
 from agents.post_repair_agent import PostRepairAgent, PostRepairConfig
+from agents.affiliate_routing_agent import AffiliateRoutingAgent
 
 from integrations.openai_adapters import OpenAIImageGenerator, OpenAIJsonLLM
 from pipeline.image_step import generate_hero_image
@@ -13,32 +25,28 @@ from pipeline.image_step import generate_hero_image
 from schemas.topic import TopicInput
 from schemas.title import TitleOptimizationInput
 from schemas.depth import DepthExpansionInput, ExpansionModuleSpec
+from schemas.post_format import PostFormatId
 
-from datetime import date, datetime, timezone
-from pathlib import Path
-import json
-import os
-import re
-import shutil
+from lib.post_formats import get_format_spec
+from lib.topic_overrides import load_topic_override_for_date
+from lib.affiliates_config_loader import load_affiliates_config
 
 
 ASTRO_POSTS_DIR = Path("site/src/content/posts")
 LOG_PATH = Path("output/posts_log.json")
-
 FAILED_POSTS_DIR = Path("output/failed_posts")
 
-# Image convention (public/)
 PUBLIC_IMAGES_DIR = Path("site/public/images")
 PUBLIC_POST_IMAGES_DIR = PUBLIC_IMAGES_DIR / "posts"
 PLACEHOLDER_HERO_PATH = PUBLIC_IMAGES_DIR / "placeholder-hero.webp"
 
-# Optional image credit fields (Astro schema makes them optional; omit if None)
 DEFAULT_IMAGE_CREDIT_NAME = None
 DEFAULT_IMAGE_CREDIT_URL = None
 
 OPTION_B_MODE = True
-
 MAX_REPAIR_ATTEMPTS = 1
+
+DEFAULT_REGION = "UK"
 
 
 def slugify(text: str) -> str:
@@ -274,33 +282,132 @@ def _run_preflight(
     return report.model_dump()
 
 
+def _compile_signal_regex(signals: list[str]) -> re.Pattern[str]:
+    parts = [re.escape(s.strip()) for s in sorted({s for s in signals if (s or "").strip()}, key=len, reverse=True)]
+    if not parts:
+        return re.compile(r"a^")
+    return re.compile(r"|".join(parts), re.IGNORECASE)
+
+
+def _infer_category_for_forced_topic(forced_topic: str) -> str:
+    """
+    Minimal, config-driven inference.
+    Uses affiliates.yaml outdoor_gear signals to decide if topic is travel/outdoors.
+    """
+    cfg = load_affiliates_config()
+    signals = cfg.signal_groups.get("outdoor_gear", [])
+    rx = _compile_signal_regex(signals)
+    return "travel" if rx.search(forced_topic or "") else "home"
+
+
+def _parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="AI Affiliate Engine post generator (UK default).")
+    p.add_argument(
+        "--format",
+        choices=["top_picks", "deep_dive", "use_case_kit"],
+        default="top_picks",
+        help="Post format style (no scheduling yet).",
+    )
+    p.add_argument(
+        "--date",
+        default=date.today().isoformat(),
+        help="ISO date YYYY-MM-DD used for filename and topic overrides (default: today).",
+    )
+    p.add_argument(
+        "--topic",
+        default=None,
+        help="Optional: force a specific topic string (bypasses topic generation).",
+    )
+    p.add_argument(
+        "--category",
+        choices=["home", "travel", "gadgets", "pets", "kids", "health"],
+        default=None,
+        help="Optional: force category when using --topic. If omitted, we infer home vs travel using config signals.",
+    )
+    p.add_argument(
+        "--audience",
+        default=None,
+        help="Optional: force audience when using --topic (otherwise defaults).",
+    )
+    p.add_argument(
+        "--topic-overrides",
+        default="config/topic_overrides.yaml",
+        help="YAML file containing date->topic overrides.",
+    )
+    return p.parse_args()
+
+
 def main():
+    args = _parse_args()
+    format_id: PostFormatId = args.format  # type: ignore[assignment]
+    format_spec = get_format_spec(format_id)
+
     print(">>> generate_blog_post.py started")
+    print(f"🧭 Region default: {DEFAULT_REGION}")
+    print(f"🧩 Format: {format_id}")
 
     ASTRO_POSTS_DIR.mkdir(parents=True, exist_ok=True)
     FAILED_POSTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    # 1) Topic
-    topic_agent = TopicSelectionAgent()
-    input_data = TopicInput(current_date=date.today().isoformat(), region="US")
+    post_date = args.date
+    published_at = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
-    try:
-        topic = topic_agent.run(input_data)
-        print("✅ Topic generated:", topic.topic)
-    except Exception as e:
-        print("Error generating topic:", e)
-        return
+    # 1) Topic (override > CLI topic > agent)
+    forced_topic = (args.topic or "").strip() or None
+    override = load_topic_override_for_date(
+        date_str=post_date,
+        overrides_path=Path(args.topic_overrides),
+    )
 
-    # 2) Products
+    if override:
+        topic_text = override.topic
+        topic_category = override.category
+        topic_audience = override.audience
+        print("📝 Topic override applied:", topic_text)
+
+    elif forced_topic:
+        topic_text = forced_topic
+        topic_category = args.category or _infer_category_for_forced_topic(forced_topic)
+        topic_audience = args.audience or "UK readers"
+        print("📝 CLI topic forced:", topic_text)
+        print("🏷️ Category:", topic_category)
+
+    else:
+        topic_agent = TopicSelectionAgent()
+        input_data = TopicInput(current_date=post_date, region=DEFAULT_REGION)
+        try:
+            topic = topic_agent.run(input_data)
+            topic_text = topic.topic
+            topic_category = topic.category
+            topic_audience = topic.audience
+            print("✅ Topic generated:", topic_text)
+        except Exception as e:
+            print("Error generating topic:", e)
+            return
+
+    # 2) Affiliate routing (config-driven)
+    routing = AffiliateRoutingAgent().run(category=topic_category, topic=topic_text)
+    provider_id = routing.provider_id
+    print(f"🔗 Affiliate provider selected: {provider_id} ({routing.reason})")
+
+    # 3) Products
     product_agent = ProductDiscoveryAgent()
     try:
-        product_models = product_agent.run(topic)
+        topic_ctx = SimpleNamespace(
+            topic=topic_text,
+            category=topic_category,
+            audience=topic_audience,
+            region=DEFAULT_REGION,
+            provider_id=provider_id,
+            format_id=format_id,
+        )
+        product_models = product_agent.run(topic_ctx)  # type: ignore[arg-type]
         print(f"✅ {len(product_models)} products generated")
     except Exception as e:
         print("Error generating products:", e)
         return
 
-    # 3) Filter + normalize
+    # 4) Filter + normalize
     products: list[dict] = []
     for p in product_models:
         if not product_passes_filter(p):
@@ -316,7 +423,6 @@ def main():
         })
 
     products = _dedupe_products(products)
-
     products = sorted(
         products,
         key=lambda p: (
@@ -327,10 +433,15 @@ def main():
         reverse=True,
     )
 
-    if len(products) < 5:
-        print("⚠️ Warning: fewer than 5 products passed filters.")
+    # Apply format pick count target
+    target_count = format_spec.pick_count_target()
+    if len(products) > target_count:
+        products = products[:target_count]
 
-    # 4) Initial title (slug frozen)
+    if len(products) < 5 and format_id == "top_picks":
+        print("⚠️ Warning: fewer than 5 products available for top_picks format.")
+
+    # 5) Title optimization (draft)
     existing_titles: list[str] = []
     try:
         if LOG_PATH.exists():
@@ -346,8 +457,8 @@ def main():
 
     title_agent = TitleOptimizationAgent()
     title_inp = TitleOptimizationInput(
-        topic=normalize_text(topic.topic),
-        primary_keyword=normalize_text(topic.topic),
+        topic=normalize_text(topic_text),
+        primary_keyword=normalize_text(topic_text),
         secondary_keywords=[],
         existing_titles=existing_titles,
         num_candidates=40,
@@ -357,30 +468,29 @@ def main():
     )
 
     title_out = title_agent.run(title_inp)
-    selected_title = normalize_text(topic.topic)
+    selected_title = normalize_text(topic_text)
     try:
         if isinstance(title_out, dict) and title_out.get("selected"):
             selected_title = normalize_text(title_out["selected"][0]["title"])
     except Exception:
-        selected_title = normalize_text(topic.topic)
+        selected_title = normalize_text(topic_text)
 
     print("✅ Selected title:", selected_title)
 
-    post_date = date.today().isoformat()
+    # 6) File naming
     slug = slugify(selected_title)
     filename = f"{post_date}-{slug}.md"
     file_path = ASTRO_POSTS_DIR / filename
     post_slug = f"{post_date}-{slug}"
 
-    published_at = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
-    meta_description = f"Curated {topic.category.replace('_', ' ')} picks for {normalize_text(topic.audience)}."
+    # 7) Frontmatter
+    meta_description = f"Curated {topic_category.replace('_', ' ')} picks for {normalize_text(topic_audience)}."
 
-    # Astro products
     astro_products: list[dict] = []
     for p in products:
         astro_products.append({
             "title": p.get("title") or "",
-            "url": p.get("url") or "https://www.amazon.com",
+            "url": p.get("url") or "https://www.amazon.co.uk",
             "price": p.get("price") or "—",
             "rating": float(p.get("rating")) if p.get("rating") is not None else 0.0,
             "reviews_count": int(p.get("reviews_count")) if p.get("reviews_count") is not None else 0,
@@ -392,8 +502,8 @@ def main():
     md.append(f'title: "{normalize_text(selected_title)}"')
     md.append(f'description: "{meta_description}"')
     md.append(f'publishedAt: "{published_at}"')
-    md.append(f'category: "{topic.category}"')
-    md.append(f'audience: "{normalize_text(topic.audience)}"')
+    md.append(f'category: "{topic_category}"')
+    md.append(f'audience: "{normalize_text(topic_audience)}"')
     md.append(f"products: {json.dumps(astro_products, ensure_ascii=False)}")
     md.append("---")
     md.append("")
@@ -430,13 +540,13 @@ def main():
     draft_markdown = "\n".join(md)
     before_wc = estimate_word_count(draft_markdown)
 
-    # Depth expansion
+    # 8) Depth expansion
     depth_agent = DepthExpansionAgent()
     modules = [
-        ExpansionModuleSpec(name="intro", enabled=True, max_words=140, rewrite_mode="upgrade"),
-        ExpansionModuleSpec(name="how_we_chose", enabled=True, max_words=170, rewrite_mode="upgrade"),
-        ExpansionModuleSpec(name="alternatives", enabled=True, max_words=220, rewrite_mode="upgrade"),
-        ExpansionModuleSpec(name="product_writeups", enabled=True, max_words=900, rewrite_mode="upgrade"),
+        ExpansionModuleSpec(name="intro", enabled=True, max_words=format_spec.max_words_intro, rewrite_mode="upgrade"),
+        ExpansionModuleSpec(name="how_we_chose", enabled=True, max_words=format_spec.max_words_how_we_chose, rewrite_mode="upgrade"),
+        ExpansionModuleSpec(name="alternatives", enabled=True, max_words=format_spec.max_words_alternatives, rewrite_mode="upgrade"),
+        ExpansionModuleSpec(name="product_writeups", enabled=True, max_words=format_spec.max_words_product_writeups, rewrite_mode="upgrade"),
     ]
 
     depth_inp = DepthExpansionInput(
@@ -444,7 +554,7 @@ def main():
         products=products,
         modules=modules,
         rewrite_mode="upgrade",
-        max_added_words=900,
+        max_added_words=(format_spec.max_words_intro + format_spec.max_words_how_we_chose + format_spec.max_words_alternatives + format_spec.max_words_product_writeups),
         voice="neutral",
         faqs=[],
         forbid_claims_of_testing=True,
@@ -454,12 +564,11 @@ def main():
     final_markdown = depth_out.get("expanded_markdown", draft_markdown)
     after_wc = estimate_word_count(final_markdown)
 
-    # Extract content used by title/image/QA
     intro_text = _extract_section(final_markdown, "Intro")
     picks_texts = _extract_picks(final_markdown)
     alternatives_text = _extract_section(final_markdown, "Alternatives worth considering")
 
-    # Final title pass
+    # 9) Final title pass
     max_chars = int(os.getenv("TITLE_MAX_CHARS", "60"))
     try:
         llm = OpenAIJsonLLM()
@@ -468,9 +577,9 @@ def main():
             config=FinalTitleConfig(max_chars=max_chars),
         )
         final_title = final_title_agent.run(
-            topic=normalize_text(topic.topic),
-            category=topic.category,
-            intro=intro_text or normalize_text(topic.topic),
+            topic=normalize_text(topic_text),
+            category=topic_category,
+            intro=intro_text or normalize_text(topic_text),
             picks=picks_texts,
             products=products,
             alternatives=alternatives_text or None,
@@ -480,7 +589,7 @@ def main():
     except Exception as e:
         print("⚠️ Final title pass unavailable, keeping initial title:", e)
 
-    # Hero image generation
+    # 10) Hero image generation
     try:
         llm = OpenAIJsonLLM()
         img = OpenAIImageGenerator()
@@ -496,9 +605,9 @@ def main():
         hero = generate_hero_image(
             agent=image_agent,
             slug=post_slug,
-            category=topic.category,
-            title=normalize_text(topic.topic),
-            intro=intro_text or normalize_text(topic.topic),
+            category=topic_category,
+            title=normalize_text(topic_text),
+            intro=intro_text or normalize_text(topic_text),
             picks=picks_texts,
             alternatives=alternatives_text or None,
         )
@@ -506,7 +615,7 @@ def main():
         print("✅ Hero image ready:", hero_image_url)
 
     except Exception as e:
-        print("⚠️ Hero image generation unavailable, using placeholder:", e)
+        print("⚠️ Hero image generation unavailable/npm, using placeholder:", e)
         hero_image_url, hero_alt = _copy_placeholder_hero(post_slug)
 
     final_markdown = _replace_frontmatter_field(final_markdown, "heroImage", hero_image_url)
@@ -517,7 +626,7 @@ def main():
     if DEFAULT_IMAGE_CREDIT_URL:
         final_markdown = _replace_frontmatter_field(final_markdown, "imageCreditUrl", DEFAULT_IMAGE_CREDIT_URL)
 
-    # Preflight QA + single repair attempt
+    # 11) Preflight QA + single repair attempt
     strict = os.getenv("PREFLIGHT_STRICT", "1").strip() not in {"0", "false", "False"}
     qa_agent = PreflightQAAgent(strict=strict)
 
@@ -550,7 +659,6 @@ def main():
         final_markdown = repair_out.get("repaired_markdown", final_markdown)
         repair_changes = repair_out.get("changes_made", []) if isinstance(repair_out.get("changes_made"), list) else []
 
-        # Re-extract intro/picks after repair (important!)
         intro_text = _extract_section(final_markdown, "Intro")
         picks_texts = _extract_picks(final_markdown)
         alternatives_text = _extract_section(final_markdown, "Alternatives worth considering")
@@ -570,28 +678,20 @@ def main():
         failed_path.write_text(final_markdown, encoding="utf-8")
 
         print("❌ Preflight QA failed after repair. Post NOT published.")
-        for i in qa_initial.get("issues", []):
-            if i.get("level") == "error":
-                print("   -", i.get("rule_id"), ":", i.get("message"))
-
-        if qa_after_repair:
-            print("   After repair, still failing errors:")
-            for i in qa_after_repair.get("issues", []):
-                if i.get("level") == "error":
-                    print("   -", i.get("rule_id"), ":", i.get("message"))
-
         append_log({
             "date": post_date,
             "publishedAt": published_at,
             "title_initial": normalize_text(selected_title),
-            "topic": normalize_text(topic.topic),
-            "category": topic.category,
-            "audience": normalize_text(topic.audience),
+            "topic": normalize_text(topic_text),
+            "category": topic_category,
+            "audience": normalize_text(topic_audience),
             "file_failed": str(failed_path).replace("\\", "/"),
             "product_count": len(products),
             "heroImage": hero_image_url,
             "word_count_before": before_wc,
             "word_count_after": after_wc,
+            "format_id": format_id,
+            "affiliate_provider": provider_id,
             "depth_modules_applied": depth_out.get("applied_modules", []),
             "qa_initial": qa_initial,
             "repair_attempted": repair_attempted,
@@ -602,7 +702,6 @@ def main():
         print(f"✅ Failure logged in {LOG_PATH}")
         return
 
-    # Publish
     warnings = (qa_after_repair or qa_initial).get("warnings", [])
     if warnings:
         print("⚠️ Preflight QA warnings:")
@@ -616,14 +715,16 @@ def main():
         "date": post_date,
         "publishedAt": published_at,
         "title_initial": normalize_text(selected_title),
-        "topic": normalize_text(topic.topic),
-        "category": topic.category,
-        "audience": normalize_text(topic.audience),
+        "topic": normalize_text(topic_text),
+        "category": topic_category,
+        "audience": normalize_text(topic_audience),
         "file": str(file_path).replace("\\", "/"),
         "product_count": len(products),
         "heroImage": hero_image_url,
         "word_count_before": before_wc,
         "word_count_after": after_wc,
+        "format_id": format_id,
+        "affiliate_provider": provider_id,
         "depth_modules_applied": depth_out.get("applied_modules", []),
         "title_candidates_top3": (title_out.get("selected", [])[:3] if isinstance(title_out, dict) else []),
         "qa_initial": qa_initial,
