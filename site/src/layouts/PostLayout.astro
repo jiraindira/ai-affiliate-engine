@@ -42,24 +42,6 @@ const showToc = Array.isArray(toc) && toc.length > 0;
 
 <section class="post-shell">
   <header class="post-header">
-    <div class="post-meta">
-      <span class="post-date">{dateLabel}</span>
-      {categoryLabel ? <span class="post-dot">•</span> : null}
-      {categoryLabel ? <span class="post-cat">{categoryLabel}</span> : null}
-      {readingTime ? <span class="post-dot">•</span> : null}
-      {readingTime ? <span class="post-rt">{readingTime} min read</span> : null}
-    </div>
-
-    <h1 class="post-title">{title}</h1>
-
-    {description ? <p class="post-desc">{description}</p> : null}
-
-    <div class="post-chips">
-      {audience ? <span class="chip">Audience: {audience}</span> : null}
-      <span class="chip">Curated picks</span>
-      <span class="chip">Skimmable + practical</span>
-    </div>
-
     {showHero && (
       <figure class="hero">
         <div class="hero-frame">
@@ -99,6 +81,24 @@ const showToc = Array.isArray(toc) && toc.length > 0;
         )}
       </figure>
     )}
+
+    <div class="post-meta">
+      <span class="post-date">{dateLabel}</span>
+      {categoryLabel ? <span class="post-dot">•</span> : null}
+      {categoryLabel ? <span class="post-cat">{categoryLabel}</span> : null}
+      {readingTime ? <span class="post-dot">•</span> : null}
+      {readingTime ? <span class="post-rt">{readingTime} min read</span> : null}
+    </div>
+
+    <h1 class="post-title">{title}</h1>
+
+    {description ? <p class="post-desc">{description}</p> : null}
+
+    <div class="post-chips">
+      {audience ? <span class="chip chip-audience">Audience: {audience}</span> : null}
+      <span class="chip">Curated picks</span>
+      <span class="chip">Skimmable + practical</span>
+    </div>
   </header>
 
   <div class="post-grid">
@@ -168,6 +168,7 @@ const showToc = Array.isArray(toc) && toc.length > 0;
   }
 
   .post-meta {
+    margin-top: 14px;
     font-size: 12px;
     color: rgba(55, 65, 81, 0.85);
     display: flex;
@@ -182,7 +183,7 @@ const showToc = Array.isArray(toc) && toc.length > 0;
   }
 
   .post-title {
-    margin-top: 14px;
+    margin-top: 10px;
     font-size: clamp(30px, 3.4vw, 52px);
     line-height: 1.06;
     letter-spacing: -0.02em;
@@ -193,7 +194,7 @@ const showToc = Array.isArray(toc) && toc.length > 0;
   }
 
   .post-desc {
-    margin-top: 14px;
+    margin-top: 12px;
     font-size: 17px;
     line-height: 1.55;
     color: rgba(55, 65, 81, 0.92);
@@ -201,7 +202,7 @@ const showToc = Array.isArray(toc) && toc.length > 0;
   }
 
   .post-chips {
-    margin-top: 16px;
+    margin-top: 14px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
@@ -217,17 +218,35 @@ const showToc = Array.isArray(toc) && toc.length > 0;
     max-width: 100%;
   }
 
-  .hero {
-    margin-top: 18px;
+  .chip-audience {
+    border-color: rgba(37, 99, 235, 0.22);
+    background: rgba(37, 99, 235, 0.06);
+    color: rgba(17, 24, 39, 0.86);
   }
 
-  /* Editorial hero: fixed aspect ratio so images don't hijack the page */
+  .hero {
+    margin-top: 0;
+  }
+
+  /* Step 1: Short, wide banner hero that never hijacks the page */
   .hero-frame {
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid rgba(17, 24, 39, 0.10);
     background: rgba(17, 24, 39, 0.02);
-    aspect-ratio: 16 / 9;
+
+    /* Wider than 16/9 so it feels like a banner */
+    aspect-ratio: 21 / 9;
+
+    /* Hard cap so it stays visually lightweight */
+    max-height: 320px;
+  }
+
+  @media (max-width: 768px) {
+    .hero-frame {
+      aspect-ratio: 16 / 9;
+      max-height: 220px;
+    }
   }
 
   .hero-img {
