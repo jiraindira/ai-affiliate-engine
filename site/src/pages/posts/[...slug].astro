@@ -2,7 +2,6 @@
 import { getCollection } from "astro:content";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import PostLayout from "../../layouts/PostLayout.astro";
-import ProductListItem from "../../components/ProductListItem.astro";
 import { getPostHeroImage } from "../../lib/postImages";
 
 export async function getStaticPaths() {
@@ -73,16 +72,6 @@ function extractTocFromMarkdown(md) {
   return toc;
 }
 
-function uniqueAnchorIds(productsList) {
-  const seen = new Map();
-  return (productsList || []).map((p, idx) => {
-    const base = slugifyHeading(p?.title) || `pick-${idx + 1}`;
-    const count = seen.get(base) ?? 0;
-    seen.set(base, count + 1);
-    return count === 0 ? base : `${base}-${count + 1}`;
-  });
-}
-
 const dateLabel = publishedAt ? formatDate(publishedAt) : "";
 const categoryLabel = category ? prettyCategory(category) : "";
 
@@ -113,9 +102,13 @@ const readingTime = estimateReadingTimeFromMarkdown(rawBody);
 
 // Quick picks behavior
 const MAX_QUICK_PICKS = 8;
-const anchorIds = uniqueAnchorIds(picks);
 const quickPicks = picks.slice(0, MAX_QUICK_PICKS);
-const quickIds = anchorIds.slice(0, MAX_QUICK_PICKS);
+
+// IMPORTANT (Step 2):
+// Link quick picks to the *in-article* H3 headings.
+// Astro/markdown typically generates id attributes for headings by slugifying the heading text.
+// We'll match that by slugifying the product title.
+const quickIds = quickPicks.map((p) => slugifyHeading(p?.title));
 ---
 
 <SiteLayout
@@ -139,24 +132,6 @@ const quickIds = anchorIds.slice(0, MAX_QUICK_PICKS);
   >
     <Content />
 
-    <hr />
-
-    <section id="top-picks" class="picks-block">
-      <h2>Picks</h2>
-      <p class="picks-sub">A practical short-list with direct links.</p>
-
-      <div class="picks-list">
-        {picks.map((p, idx) => {
-          const id = anchorIds[idx];
-          return (
-            <div id={id} class="pick-anchor" data-pick>
-              <ProductListItem product={p} index={idx + 1} />
-            </div>
-          );
-        })}
-      </div>
-    </section>
-
     <Fragment slot="sidebar">
       <div class="side-stack">
         <div class="sidecard-lite">
@@ -167,7 +142,7 @@ const quickIds = anchorIds.slice(0, MAX_QUICK_PICKS);
               const id = quickIds[idx];
               return (
                 <li class="quick-item">
-                  <a href={`#${id}`} class="quick-link" title={p.title}>
+                  <a href={id ? `#${id}` : "#the-picks"} class="quick-link" title={p.title}>
                     <span class="quick-num">{idx + 1}.</span>
                     <span class="quick-title">{p.title}</span>
                   </a>
@@ -194,7 +169,7 @@ const quickIds = anchorIds.slice(0, MAX_QUICK_PICKS);
             </p>
           ) : null}
 
-          <a href="#top-picks" class="jump-link">Jump to list →</a>
+          <a href="#the-picks" class="jump-link">Jump to picks section →</a>
         </div>
 
         <div class="sidecard-lite sidecard-toc">
@@ -219,32 +194,6 @@ const quickIds = anchorIds.slice(0, MAX_QUICK_PICKS);
     </Fragment>
 
     <style>
-      .picks-block {
-        margin-top: 28px;
-      }
-      .picks-sub {
-        margin-top: 8px;
-        color: rgba(55, 65, 81, 0.85);
-        font-size: 14px;
-        line-height: 1.55;
-      }
-      .picks-list {
-        margin-top: 18px;
-        display: grid;
-        gap: 18px;
-      }
-      .pick-anchor {
-        scroll-margin-top: 90px;
-        border-radius: 18px;
-      }
-
-      /* ✅ :target highlight for the selected pick */
-      .pick-anchor:target {
-        outline: 2px solid rgba(37, 99, 235, 0.35);
-        outline-offset: 6px;
-        background: rgba(37, 99, 235, 0.03);
-      }
-
       .side-stack {
         display: grid;
         gap: 12px;
@@ -350,17 +299,6 @@ const quickIds = anchorIds.slice(0, MAX_QUICK_PICKS);
       .jump-link:hover {
         text-decoration: underline;
         text-underline-offset: 3px;
-      }
-
-      /* ✅ Sidebar “selected” effect: highlight the quick-pick item
-         When you click a quick pick, the URL hash becomes #id.
-         We can't select "the matching <li>" purely by hash without JS.
-         BUT we can give users a very strong cue by:
-         - highlighting the *target pick card* (above), and
-         - adding a subtle "you are in picks mode" sidebar polish:
-      */
-      :global(body:has(.pick-anchor:target)) .sidecard-lite {
-        border-color: rgba(37, 99, 235, 0.18);
       }
 
       /* TOC styling */
