@@ -4,9 +4,12 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "prebuild": "cd .. && poetry run python validate_content.py",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "validate": "cd .. && poetry run python validate_content.py",
+    "validate:fix": "cd .. && poetry run python validate_content.py --fix"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^6.3.10",

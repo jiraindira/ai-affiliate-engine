@@ -8,6 +8,7 @@ import shutil
 from datetime import date, datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
+from urllib.parse import urlparse
 
 from agents.affiliate_routing_agent import AffiliateRoutingAgent
 from agents.depth_expansion_agent import DepthExpansionAgent
@@ -54,6 +55,20 @@ DEFAULT_REGION = "UK"
 
 # ✅ Central catalog path
 CATALOG_PATH = Path("output/catalog/manual_product_catalog.json")
+
+
+def _is_valid_http_url(url: str) -> bool:
+    """
+    Hard-fail URL validator: requires a fully-qualified http(s) URL with a netloc.
+    No auto-fixing or normalization (policy: hard fail).
+    """
+    if url is None:
+        return False
+    s = str(url).strip()
+    if not s:
+        return False
+    parsed = urlparse(s)
+    return parsed.scheme in ("http", "https") and bool(parsed.netloc)
 
 
 def slugify(text: str) -> str:
@@ -417,16 +432,25 @@ def main():
         print("Error generating products:", e)
         return
 
-    # 4) Filter + normalize
+    # 4) Filter + normalize (STRICT URL VALIDATION: hard fail)
     products: list[dict] = []
-    for p in product_models:
+    for idx, p in enumerate(product_models):
         if not product_passes_filter(p):
             continue
+
+        url_raw = str(p.url).strip() if getattr(p, "url", None) is not None else ""
+        if not _is_valid_http_url(url_raw):
+            raise RuntimeError(
+                f"ProductDiscoveryAgent returned invalid url for product[{idx}] "
+                f"title='{getattr(p, 'title', '')}': '{url_raw}'. "
+                "URLs must be fully-qualified http(s) links (hard fail)."
+            )
+
         products.append(
             {
                 "title": normalize_text(p.title),
                 "amazon_search_query": getattr(p, "amazon_search_query", None),
-                "url": str(p.url) if getattr(p, "url", None) is not None else None,
+                "url": url_raw,
                 "price": str(p.price) if getattr(p, "price", None) is not None else None,
                 "rating": safe_float(getattr(p, "rating", None)),
                 "reviews_count": safe_int(getattr(p, "reviews_count", None)),
@@ -526,14 +550,21 @@ def main():
     )
 
     astro_products: list[dict] = []
-    for p in products:
+    for idx, p in enumerate(products):
+        url = str(p.get("url") or "").strip()
+        if not _is_valid_http_url(url):
+            raise RuntimeError(
+                f"Invalid product url before writing frontmatter for product[{idx}] "
+                f"pick_id='{p.get('pick_id','')}' title='{p.get('title','')}': '{url}'. "
+                "URLs must be fully-qualified http(s) links (hard fail)."
+            )
+
         astro_products.append(
             {
                 "pick_id": p.get("pick_id") or "",
                 "catalog_key": p.get("catalog_key") or "",
                 "title": p.get("title") or "",
-                # ✅ IMPORTANT: until hydrated, leave blank so UI can show "Link needed"
-                "url": p.get("url") or "",
+                "url": url,
                 "price": p.get("price") or "—",
                 "rating": float(p.get("rating")) if p.get("rating") is not None else 0.0,
                 "reviews_count": int(p.get("reviews_count"))

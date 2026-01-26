@@ -18,7 +18,7 @@ const { post } = Astro.props;
 // Ensure Astro still processes the markdown entry normally (content collections)
 await post.render();
 
-const { products = [], publishedAt, category } = post.data;
+const { products = [], publishedAt, category, picks = [] } = post.data;
 
 // SEO / sharing
 const canonical = `/posts/${post.slug}`;
@@ -104,15 +104,6 @@ function splitHowChosenSection(md) {
 
 /**
  * Convert the body of "How this list was chosen" into bullet points.
- * Assumes the section looks like:
- *   ## How this list was chosen
- *   Intro paragraph...
- *
- *   Paragraph 1...
- *
- *   Paragraph 2...
- *
- * We keep the intro paragraph, then turn remaining paragraphs into "- ..." list items.
  */
 function normalizeHowChosenToBullets(sectionMd) {
   if (!sectionMd) return "";
@@ -139,11 +130,9 @@ function normalizeHowChosenToBullets(sectionMd) {
 
   const intro = blocks[0];
 
-  // Convert remaining blocks into markdown list items, unless they already start with list syntax
   const items = blocks.slice(1).map((b) => {
     const trimmed = b.trim();
     if (/^[-*]\s+/.test(trimmed) || /^\d+\.\s+/.test(trimmed)) return trimmed;
-    // flatten any hard-wrapped lines inside the paragraph
     const flat = trimmed.replace(/\n+/g, " ").replace(/\s+/g, " ").trim();
     return `- ${flat}`;
   });
@@ -237,7 +226,24 @@ function mdToHtml(md) {
   return md ? marked.parse(md) : "";
 }
 
-const pickBodyById = extractPickBodies(picksSection);
+/**
+ * ✅ NEW SOURCE OF TRUTH:
+ * Picks now live in frontmatter as structured data: post.data.picks[]
+ * We map pick_id -> body markdown.
+ *
+ * Back-compat:
+ * If picks[] is empty, fall back to parsing "## The picks" from the markdown body.
+ */
+let pickBodyById = new Map();
+if (Array.isArray(picks) && picks.length > 0) {
+  pickBodyById = new Map(
+    picks
+      .filter((x) => x && typeof x.pick_id === "string")
+      .map((x) => [x.pick_id, String(x.body ?? "").trim()])
+  );
+} else {
+  pickBodyById = extractPickBodies(picksSection);
+}
 ---
 
 <SiteLayout
@@ -300,119 +306,117 @@ const pickBodyById = extractPickBodies(picksSection);
       })}
     </section>
 
-    <!-- Quicklink -->
-
     <Fragment slot="sidebar">
-    <div class="side-stack">
-      <div class="sidecard-lite">
-        <div class="side-title">Quick picks</div>
+      <div class="side-stack">
+        <div class="sidecard-lite">
+          <div class="side-title">Quick picks</div>
 
-        <ol class="quick-list" aria-label="Quick picks list">
-          {products.map((p, idx) => {
-            const id = slugifyHeading(p.title);
-            return (
-              <li class="quick-item">
-                <a href={id ? `#${id}` : "#the-picks"} class="quick-link" title={p.title}>
-                  <span class="quick-num">{idx + 1}.</span>
-                  <span class="quick-title">{p.title}</span>
-                </a>
+          <ol class="quick-list" aria-label="Quick picks list">
+            {products.map((p, idx) => {
+              const id = slugifyHeading(p.title);
+              return (
+                <li class="quick-item">
+                  <a href={id ? `#${id}` : "#the-picks"} class="quick-link" title={p.title}>
+                    <span class="quick-num">{idx + 1}.</span>
+                    <span class="quick-title">{p.title}</span>
+                  </a>
 
-                {(typeof p.rating === "number" || typeof p.reviews_count === "number") && (
-                  <div class="quick-meta">
-                    {typeof p.rating === "number" ? <span>{p.rating.toFixed(1)}★</span> : null}
-                    {typeof p.reviews_count === "number" ? (
-                      <span>
-                        {typeof p.rating === "number" ? " · " : ""}
-                        {p.reviews_count.toLocaleString()} reviews
-                      </span>
-                    ) : null}
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ol>
+                  {(typeof p.rating === "number" || typeof p.reviews_count === "number") && (
+                    <div class="quick-meta">
+                      {typeof p.rating === "number" ? <span>{p.rating.toFixed(1)}★</span> : null}
+                      {typeof p.reviews_count === "number" ? (
+                        <span>
+                          {typeof p.rating === "number" ? " · " : ""}
+                          {p.reviews_count.toLocaleString()} reviews
+                        </span>
+                      ) : null}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
 
-        <a href="#the-picks" class="jump-link">Jump to picks section →</a>
+          <a href="#the-picks" class="jump-link">Jump to picks section →</a>
+        </div>
       </div>
-    </div>
 
-    <style>
-      .side-stack { display: grid; gap: 12px; }
+      <style>
+        .side-stack { display: grid; gap: 12px; }
 
-      .sidecard-lite {
-        background: rgba(255, 255, 255, 0.95);
-        border: 1px solid rgba(17, 24, 39, 0.08);
-        border-radius: 18px;
-        padding: 16px;
-      }
+        .sidecard-lite {
+          background: rgba(255, 255, 255, 0.95);
+          border: 1px solid rgba(17, 24, 39, 0.08);
+          border-radius: 18px;
+          padding: 16px;
+        }
 
-      .side-title {
-        font-size: 13px;
-        font-weight: 800;
-        color: rgba(17, 24, 39, 0.9);
-        letter-spacing: -0.01em;
-      }
+        .side-title {
+          font-size: 13px;
+          font-weight: 800;
+          color: rgba(17, 24, 39, 0.9);
+          letter-spacing: -0.01em;
+        }
 
-      .quick-list {
-        margin: 12px 0 0;
-        padding: 0;
-        list-style: none;
-        display: grid;
-        gap: 10px;
-        font-size: 13px;
-        max-height: 360px;
-        overflow: auto;
-        padding-right: 6px;
-        scrollbar-gutter: stable;
-      }
+        .quick-list {
+          margin: 12px 0 0;
+          padding: 0;
+          list-style: none;
+          display: grid;
+          gap: 10px;
+          font-size: 13px;
+          max-height: 360px;
+          overflow: auto;
+          padding-right: 6px;
+          scrollbar-gutter: stable;
+        }
 
-      .quick-item {
-        padding: 10px 10px;
-        border-radius: 14px;
-        border: 1px solid rgba(17, 24, 39, 0.06);
-        background: rgba(17, 24, 39, 0.02);
-      }
+        .quick-item {
+          padding: 10px 10px;
+          border-radius: 14px;
+          border: 1px solid rgba(17, 24, 39, 0.06);
+          background: rgba(17, 24, 39, 0.02);
+        }
 
-      .quick-link {
-        text-decoration: none;
-        color: rgba(17, 24, 39, 0.88);
-        font-weight: 700;
-        line-height: 1.25;
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 6px;
-        align-items: baseline;
-      }
+        .quick-link {
+          text-decoration: none;
+          color: rgba(17, 24, 39, 0.88);
+          font-weight: 700;
+          line-height: 1.25;
+          display: grid;
+          grid-template-columns: auto 1fr;
+          gap: 6px;
+          align-items: baseline;
+        }
 
-      .quick-link:hover {
-        color: rgb(37, 99, 235);
-        text-decoration: underline;
-        text-underline-offset: 3px;
-      }
+        .quick-link:hover {
+          color: rgb(37, 99, 235);
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
 
-      .quick-num { color: rgba(55, 65, 81, 0.65); font-weight: 800; }
+        .quick-num { color: rgba(55, 65, 81, 0.65); font-weight: 800; }
 
-      .quick-title {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
+        .quick-title {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
 
-      .quick-meta { margin-top: 6px; color: rgba(55, 65, 81, 0.7); font-size: 12px; }
+        .quick-meta { margin-top: 6px; color: rgba(55, 65, 81, 0.7); font-size: 12px; }
 
-      .jump-link {
-        display: inline-block;
-        margin-top: 12px;
-        font-size: 13px;
-        font-weight: 750;
-        color: rgb(37, 99, 235);
-        text-decoration: none;
-      }
-      .jump-link:hover { text-decoration: underline; text-underline-offset: 3px; }
-    </style>
-  </Fragment>
+        .jump-link {
+          display: inline-block;
+          margin-top: 12px;
+          font-size: 13px;
+          font-weight: 750;
+          color: rgb(37, 99, 235);
+          text-decoration: none;
+        }
+        .jump-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+      </style>
+    </Fragment>
 
     <style>
       .picks {

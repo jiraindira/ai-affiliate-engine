@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-01-25T16:48:43Z",
+  "updated_at": "2026-01-26T22:04:18Z",
   "items": {
     "amazon_uk:snake-plant-sansevieria-indoor-potted-plant": {
       "provider": "amazon_uk",
@@ -296,6 +296,94 @@
       "rating": 4.5,
       "reviews_count": 19917,
       "price": "£24.00",
+      "asin": "",
+      "notes": ""
+    },
+    "amazon_uk:winalot-meaty-chunks-adult-wet-dog": {
+      "provider": "amazon_uk",
+      "status": "ok",
+      "title": "WINALOT Meaty Chunks Adult Wet Dog",
+      "affiliate_url": "",
+      "rating": 0.0,
+      "reviews_count": 0,
+      "price": "",
+      "asin": "",
+      "notes": ""
+    },
+    "amazon_uk:earth-rated-dog-poo-bags": {
+      "provider": "amazon_uk",
+      "status": "ok",
+      "title": "Earth Rated Dog Poo Bags",
+      "affiliate_url": "",
+      "rating": 0.0,
+      "reviews_count": 0,
+      "price": "",
+      "asin": "",
+      "notes": ""
+    },
+    "amazon_uk:harringtons-complete-dry-adult-dog-food-lamb-rice-15kg": {
+      "provider": "amazon_uk",
+      "status": "ok",
+      "title": "Harringtons Complete Dry Adult Dog Food Lamb & Rice 15kg",
+      "affiliate_url": "",
+      "rating": 0.0,
+      "reviews_count": 0,
+      "price": "",
+      "asin": "",
+      "notes": ""
+    },
+    "amazon_uk:proden-plaqueoff-powder-for-dogs-cats-tartar-bad-breath-remover": {
+      "provider": "amazon_uk",
+      "status": "ok",
+      "title": "ProDen PlaqueOff Powder for Dogs & Cats, Tartar & Bad Breath Remover",
+      "affiliate_url": "",
+      "rating": 0.0,
+      "reviews_count": 0,
+      "price": "",
+      "asin": "",
+      "notes": ""
+    },
+    "amazon_uk:amazon-basics-dog-and-puppy-training-pads-leakproof": {
+      "provider": "amazon_uk",
+      "status": "ok",
+      "title": "Amazon Basics Dog and Puppy Training Pads, Leakproof",
+      "affiliate_url": "",
+      "rating": 0.0,
+      "reviews_count": 0,
+      "price": "",
+      "asin": "",
+      "notes": ""
+    },
+    "amazon_uk:pet-munchies-venison-beef-liver-dog-training-treats": {
+      "provider": "amazon_uk",
+      "status": "ok",
+      "title": "Pet Munchies Venison & Beef Liver Dog Training Treats",
+      "affiliate_url": "",
+      "rating": 0.0,
+      "reviews_count": 0,
+      "price": "",
+      "asin": "",
+      "notes": ""
+    },
+    "amazon_uk:protexin-pro-fibre-for-dogs-high-fibre-digestive-supplement-with-prebiotics-postbiotics": {
+      "provider": "amazon_uk",
+      "status": "ok",
+      "title": "Protexin Pro-Fibre for Dogs – High-Fibre Digestive Supplement with Prebiotics & Postbiotics",
+      "affiliate_url": "",
+      "rating": 0.0,
+      "reviews_count": 0,
+      "price": "",
+      "asin": "",
+      "notes": ""
+    },
+    "amazon_uk:whimzees-variety-box-dental-m-28-pieces": {
+      "provider": "amazon_uk",
+      "status": "ok",
+      "title": "WHIMZEES Variety Box Dental M, 28 Pieces",
+      "affiliate_url": "",
+      "rating": 0.0,
+      "reviews_count": 0,
+      "price": "",
       "asin": "",
       "notes": ""
     }

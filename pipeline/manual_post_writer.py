@@ -5,6 +5,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from agents.depth_expansion_agent import DepthExpansionAgent
 from agents.final_title_agent import FinalTitleAgent, FinalTitleConfig
@@ -38,6 +39,21 @@ def _slugify(text: str) -> str:
     s = re.sub(r"\s+", "-", s)
     s = re.sub(r"-+", "-", s)
     return s.strip("-")
+
+
+def _is_valid_http_url(url: str) -> bool:
+    """
+    Hard-fail URL validator: requires a fully-qualified http(s) URL with a netloc.
+    No auto-fixing (policy: hard fail).
+    """
+    if url is None:
+        return False
+    s = str(url).strip()
+    if not s:
+        return False
+
+    parsed = urlparse(s)
+    return parsed.scheme in ("http", "https") and bool(parsed.netloc)
 
 
 _H2_RE = re.compile(r"(?m)^##\s+(.+?)\s*$")
@@ -178,16 +194,21 @@ class ManualPostWriter:
         if len(raw_products) < 3:
             raise RuntimeError("post_input.json must contain at least 3 products")
 
-        # Normalize products
+        # Normalize products (strict URL validation: hard fail)
         products: list[dict[str, Any]] = []
-        for p in raw_products:
+        for idx, p in enumerate(raw_products):
             title = p.get("title") or p.get("name")
             if not title:
-                raise RuntimeError("Each product must have 'title' (or 'name')")
+                raise RuntimeError(f"Product[{idx}] must have 'title' (or 'name')")
 
             url = str(p.get("url", "")).strip()
             if not url:
-                raise RuntimeError("Each product must have a non-empty 'url' (schema requires a valid URL).")
+                raise RuntimeError(f"Product[{idx}] must have a non-empty 'url' (schema requires a valid URL).")
+
+            if not _is_valid_http_url(url):
+                raise RuntimeError(
+                    f"Product[{idx}] url is invalid (must be fully-qualified http(s) URL): {url}"
+                )
 
             products.append(
                 {
@@ -220,9 +241,14 @@ class ManualPostWriter:
         catalog = ProductCatalog(path=CATALOG_PATH)
         catalog.ensure_entries_for_products(provider="amazon_uk", products=products)
 
-        # Astro frontmatter products array
+        # Astro frontmatter products array (re-assert URL validity defensively)
         astro_products: list[dict[str, Any]] = []
         for idx, p in enumerate(products, start=1):
+            if not _is_valid_http_url(p["url"]):
+                raise RuntimeError(
+                    f"Internal error: normalized product url is invalid for '{p.get('title','')}'. url={p['url']}"
+                )
+
             astro_products.append(
                 {
                     "pick_id": f"pick-{idx}-{_slugify(p['title'])}",

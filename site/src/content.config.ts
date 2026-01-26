@@ -32,8 +32,13 @@ const posts = defineCollection({
           catalog_key: z.string().nullable().optional(),
           title: z.string(),
 
-          // Must be a valid URL or Astro will hard-fail
-          url: z.string().url(),
+          /**
+           * URLs are not fully wired for auto-generation yet.
+           * Contract:
+           * - Valid URL => link is usable
+           * - "" => link pending (UI should render disabled CTA / placeholder)
+           */
+          url: z.union([z.string().url(), z.literal("")]).default(""),
 
           price: z.string().optional(),
           rating: z.number().optional(),
