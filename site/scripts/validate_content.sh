@@ -1,19 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Pass through optional args like --fix
 ARGS="${*:-}"
 
 # Run from site/, validation lives at repo root
 cd ..
 
-# Prefer python3 (common on linux), fallback to python
+# Prefer python3, fallback to python
 PY=python3
 command -v python3 >/dev/null 2>&1 || PY=python
 
-# Install minimal deps (no Poetry on Vercel)
-$PY -m pip install --upgrade pip
-$PY -m pip install -r requirements-vercel.txt
+# Create an isolated venv inside the repo (allowed on Vercel)
+$PY -m venv .venv_validate
+
+# Activate it
+# shellcheck disable=SC1091
+source .venv_validate/bin/activate
+
+# Upgrade pip inside venv and install minimal deps
+python -m pip install --upgrade pip
+python -m pip install -r requirements-vercel.txt
 
 # Run validation
-$PY validate_content.py $ARGS
+python validate_content.py $ARGS
