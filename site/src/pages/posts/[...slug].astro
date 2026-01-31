@@ -66,6 +66,27 @@ const relatedPosts = allPosts
   .slice(0, 3)
   .map((x) => x.post);
 
+const moreGuides = (() => {
+  const seen = new Set();
+  const list = [];
+
+  const add = (kind, p) => {
+    if (!p) return;
+    if (seen.has(p.slug)) return;
+    seen.add(p.slug);
+    list.push({ kind, post: p });
+  };
+
+  add("Newer", newerPost);
+  add("Older", olderPost);
+
+  for (const rp of relatedPosts) {
+    add("Related", rp);
+  }
+
+  return list.slice(0, 4);
+})();
+
 function formatDateShort(d) {
   try {
     if (!d) return "";
@@ -421,43 +442,20 @@ if (Array.isArray(picks) && picks.length > 0) {
       })}
     </section>
 
-    {(newerPost || olderPost) ? (
+    {moreGuides.length ? (
       <nav class="np" aria-label="More guides">
         <div class="np-head">More guides</div>
 
         <div class="np-grid">
-          {newerPost ? (
-            <a class="np-card" href={`/posts/${newerPost.slug}`}>
-              <div class="np-kicker">Newer guide</div>
-              <div class="np-title">{newerPost.data.title}</div>
-              <div class="np-meta">{formatDateShort(newerPost.data.publishedAt)}</div>
-            </a>
-          ) : null}
-
-          {olderPost ? (
-            <a class="np-card" href={`/posts/${olderPost.slug}`}>
-              <div class="np-kicker">Older guide</div>
-              <div class="np-title">{olderPost.data.title}</div>
-              <div class="np-meta">{formatDateShort(olderPost.data.publishedAt)}</div>
-            </a>
-          ) : null}
-        </div>
-      </nav>
-    ) : null}
-
-    {relatedPosts.length ? (
-      <section class="related" aria-label="Related guides">
-        <h2 class="related-head">Related guides</h2>
-
-        <div class="related-list">
-          {relatedPosts.map((rp) => (
-            <a class="related-item" href={`/posts/${rp.slug}`}>
-              <span class="related-title">{rp.data.title}</span>
-              <span class="related-date">{formatDateShort(rp.data.publishedAt)}</span>
+          {moreGuides.map(({ kind, post: p }) => (
+            <a class="np-card" href={`/posts/${p.slug}`}>
+              <div class="np-kicker">{kind} guide</div>
+              <div class="np-title">{p.data.title}</div>
+              <div class="np-meta">{formatDateShort(p.data.publishedAt)}</div>
             </a>
           ))}
         </div>
-      </section>
+      </nav>
     ) : null}
 
     <Fragment slot="sidebar">
@@ -752,54 +750,6 @@ if (Array.isArray(picks) && picks.length > 0) {
         margin-top: 6px;
         font-size: 12px;
         color: rgba(55, 65, 81, 0.7);
-      }
-
-      .related {
-        max-width: 72ch;
-        margin-top: 18px;
-      }
-
-      .related-head {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 900;
-        letter-spacing: -0.01em;
-        color: rgba(17, 24, 39, 0.95);
-      }
-
-      .related-list {
-        margin-top: 10px;
-        display: grid;
-        gap: 8px;
-      }
-
-      .related-item {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 12px;
-        text-decoration: none;
-        padding: 10px 12px;
-        border-radius: 14px;
-        border: 1px solid rgba(17, 24, 39, 0.08);
-        background: rgba(255, 255, 255, 0.6);
-        color: rgba(17, 24, 39, 0.88);
-      }
-
-      .related-item:hover {
-        border-color: rgba(37, 99, 235, 0.22);
-        background: rgba(37, 99, 235, 0.04);
-      }
-
-      .related-title {
-        font-weight: 800;
-        line-height: 1.25;
-      }
-
-      .related-date {
-        font-size: 12px;
-        color: rgba(55, 65, 81, 0.7);
-        white-space: nowrap;
       }
     </style>
   </PostLayout>

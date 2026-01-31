@@ -151,8 +151,16 @@ Template:
 - [ ] M7-T6: Add RSS feed for guides. (owner: agent) (estimate: M)
 - [ ] M7-T7: Add OpenGraph image strategy (default OG image + per-post OG where missing). (owner: agent) (estimate: M)
 - [ ] M7-T8: Performance pass (Lighthouse: LCP/CLS) and fix top offenders. (owner: agent) (estimate: M)
-- [ ] M7-T9: Embed Google Analytics 4 (GA4) via `gtag.js` in the site layout (env-driven + prod-only). (owner: agent) (estimate: S)
+- [x] M7-T9: Embed Google Analytics 4 (GA4) via `gtag.js` in the site layout (env-driven + prod-only). (owner: agent) (estimate: S)
 - [ ] M7-T10: Verify GA4 receives page_view + track key engagement events (affiliate CTA click, “Jump to picks”). (owner: agent) (estimate: M)
+- [x] M7-T11: Collapse bottom-of-post navigation to a single “More guides” section. (owner: agent) (estimate: S)
+- [x] M7-T12: Tighten guide card spacing on /posts (reduced vertical gaps). (owner: agent) (estimate: S)
+- [x] M7-T13: Improve post content heading styles (make “Intro” and other H2/H3 less muted). (owner: agent) (estimate: S)
+- [x] M7-T14: Add a /cookies page with a “reset preferences” control. (owner: agent) (estimate: S)
+- [x] M7-T15: Add cookie consent banner (bottom) that gates analytics loading. (owner: agent) (estimate: M)
+- [x] M7-T16: Track all outbound link clicks (after consent) via a single delegated click handler. (owner: agent) (estimate: M)
+- [x] M7-T17: Set `PUBLIC_GA_MEASUREMENT_ID` in Vercel (Production + Preview if desired). (owner: human) (estimate: S)
+- [ ] M7-T18: Deploy latest site changes and verify `/cookies` resolves + cookie banner appears on production. (owner: human) (estimate: S)
 
 ---
 
@@ -166,3 +174,6 @@ Template:
 - 2026-01-31 — agent — Completed: M5-T1, M5-T2, M5-T3, M5-T4 — Evidence: site/src/pages/index.astro, site/src/pages/posts/index.astro, site/src/pages/posts/[...slug].astro, site/src/components/TopTopicsNav.astro, `npm run build`
 - 2026-01-31 — agent — Completed: M6-T1, M6-T2, M6-T3 — Evidence: site/src/pages/index.astro, site/src/styles/global.css, site/src/layouts/PostLayout.astro, `npm run build`
 - 2026-01-31 — agent — Completed: M4-T4 — Evidence: site/src/layouts/PostLayout.astro, site/src/pages/posts/[...slug].astro, `npm run build`
+- 2026-01-31 — agent — Completed: M7-T11, M7-T12, M7-T13 — Evidence: site/src/pages/posts/[...slug].astro, site/src/pages/posts/index.astro, site/src/layouts/PostLayout.astro, `npm run build`
+- 2026-01-31 — agent — Completed: M7-T9, M7-T14, M7-T15, M7-T16 — Evidence: site/src/layouts/SiteLayout.astro, site/src/pages/cookies.astro, `npm run build`
+- 2026-01-31 — agent — Completed: M7-T17 — Evidence: user confirmed Vercel env var `PUBLIC_GA_MEASUREMENT_ID` set

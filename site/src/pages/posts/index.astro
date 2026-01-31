@@ -124,7 +124,7 @@ const listJsonLd = buildCollectionPageJsonLd({
     <p id="guide-status" class="mt-3 text-sm text-gray-600" aria-live="polite"></p>
 
     {posts.length ? (
-      <section id="guides-grid" class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <section id="guides-grid" class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {posts.map((post) => {
           const cats = normalizePostCategories(post, taxonomy);
           const haystack = [
