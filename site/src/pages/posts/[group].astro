@@ -4,6 +4,11 @@ import GuideCard from "../../components/GuideCard.astro";
 import { getCollection } from "astro:content";
 import { getTaxonomy } from "../../lib/taxonomy";
 import { normalizePostCategories } from "../../lib/normalizeCategories";
+import {
+  buildBreadcrumbList,
+  buildCollectionPageJsonLd,
+  toAbsoluteUrl,
+} from "../../lib/structuredData";
 
 export async function getStaticPaths() {
   const taxonomy = await getTaxonomy();
@@ -64,9 +69,34 @@ const filtered =
 
 const pageTitle = `${label} guides`;
 const pageDesc = intro || `Latest curated buying guides in ${label}.`;
+
+const baseUrl = (Astro.site ?? "http://localhost").toString();
+const canonicalPath = `/posts/${groupKey}`;
+const canonicalUrl = toAbsoluteUrl(baseUrl, canonicalPath);
+
+const breadcrumbJsonLd = buildBreadcrumbList([
+  { name: taxonomy.brand.name, url: toAbsoluteUrl(baseUrl, "/") },
+  { name: "Guides", url: toAbsoluteUrl(baseUrl, "/posts") },
+  { name: label, url: canonicalUrl },
+]);
+
+const listJsonLd = buildCollectionPageJsonLd({
+  canonicalUrl,
+  name: pageTitle,
+  description: pageDesc,
+  itemList: filtered.map((p) => ({
+    name: String(p.data.title),
+    url: toAbsoluteUrl(baseUrl, `/posts/${p.slug}`),
+  })),
+});
 ---
 
 <SiteLayout title={pageTitle} description={pageDesc} canonical={`/posts/${groupKey}`}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
+    <script type="application/ld+json" set:html={JSON.stringify(listJsonLd)} />
+  </Fragment>
+
   <div class="max-w-6xl mx-auto px-6 pt-12">
     <div class="flex items-end justify-between gap-6">
       <div>

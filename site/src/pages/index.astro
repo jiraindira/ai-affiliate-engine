@@ -51,12 +51,14 @@ const countsByGroup = taxonomy.groups.reduce((acc, g) => {
 
 const navItems = [
   { key: "all", label: "All", count: posts.length, href: "/posts" },
-  ...taxonomy.groups.map((g) => ({
-    key: g.key,
-    label: g.label,
-    count: countsByGroup[g.key] ?? 0,
-    href: `/posts/${g.key}`,
-  })),
+  ...taxonomy.groups
+    .map((g) => ({
+      key: g.key,
+      label: g.label,
+      count: countsByGroup[g.key] ?? 0,
+      href: `/posts/${g.key}`,
+    }))
+    .filter((it) => (typeof it.count === "number" ? it.count > 0 : true)),
 ];
 
 // Homepage copy comes from taxonomy (agent-owned), with safe fallbacks
@@ -85,8 +87,9 @@ const hp = taxonomy.homepage ?? {
 };
 ---
 
-<SiteLayout title={hp.seoTitle} description={hp.seoDescription} canonical="/">
-  <h2 class="sr-only">Independent product buying guides and recommendations</h2>
+<SiteLayout title={taxonomy.brand.name} description={hp.seoDescription} canonical="/">
+  <h1 class="sr-only">{taxonomy.brand.name}</h1>
+  <p class="sr-only">Independent product buying guides and recommendations</p>
 
   <div class="max-w-6xl mx-auto px-6 pt-12">
     <!-- TOPICS (taxonomy-driven) -->

@@ -4,6 +4,13 @@ import SiteLayout from "../../layouts/SiteLayout.astro";
 import PostLayout from "../../layouts/PostLayout.astro";
 import ProductCard from "../../components/ProductCard.astro";
 import { marked } from "marked";
+import { getTaxonomy } from "../../lib/taxonomy";
+import { normalizePostCategories } from "../../lib/normalizeCategories";
+import {
+  buildArticleJsonLd,
+  buildBreadcrumbList,
+  toAbsoluteUrl,
+} from "../../lib/structuredData";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts");
@@ -20,9 +27,101 @@ await post.render();
 
 const { products = [], publishedAt, category, picks = [] } = post.data;
 
+const taxonomy = await getTaxonomy();
+
+// -----------------------------
+// Discovery: related + next/prev
+// -----------------------------
+const allPosts = await getCollection("posts");
+allPosts.sort((a, b) => {
+  const ta = a.data.publishedAt instanceof Date ? a.data.publishedAt.getTime() : 0;
+  const tb = b.data.publishedAt instanceof Date ? b.data.publishedAt.getTime() : 0;
+  const t = tb - ta;
+  if (t !== 0) return t;
+  return b.slug.localeCompare(a.slug);
+});
+
+const currentIndex = allPosts.findIndex((p) => p.slug === post.slug);
+const newerPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+const olderPost = currentIndex >= 0 && currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+
+const currentCats = normalizePostCategories(post, taxonomy);
+
+const relatedPosts = allPosts
+  .filter((p) => p.slug !== post.slug)
+  .map((p) => {
+    const cats = normalizePostCategories(p, taxonomy);
+    const shared = cats.filter((c) => currentCats.includes(c)).length;
+    return { post: p, shared };
+  })
+  .filter((x) => x.shared > 0)
+  .sort((a, b) => {
+    if (b.shared !== a.shared) return b.shared - a.shared;
+    const ta = a.post.data.publishedAt instanceof Date ? a.post.data.publishedAt.getTime() : 0;
+    const tb = b.post.data.publishedAt instanceof Date ? b.post.data.publishedAt.getTime() : 0;
+    const t = tb - ta;
+    if (t !== 0) return t;
+    return b.post.slug.localeCompare(a.post.slug);
+  })
+  .slice(0, 3)
+  .map((x) => x.post);
+
+function formatDateShort(d) {
+  try {
+    if (!d) return "";
+    return new Date(d).toLocaleDateString("en-GB", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    });
+  } catch {
+    return "";
+  }
+}
+
+const baseUrl = (Astro.site ?? "http://localhost").toString();
+const siteName = taxonomy.brand.name;
+const siteUrl = toAbsoluteUrl(baseUrl, "/");
+const logoUrl = toAbsoluteUrl(baseUrl, "/brand/logo-icon.png");
+
 // SEO / sharing
 const canonical = `/posts/${post.slug}`;
 const ogImage = post.data.heroImage;
+
+const canonicalUrl = toAbsoluteUrl(baseUrl, canonical);
+const ogImageUrl = ogImage ? toAbsoluteUrl(baseUrl, ogImage) : undefined;
+
+const datePublishedIso =
+  post.data.publishedAt instanceof Date
+    ? post.data.publishedAt.toISOString()
+    : undefined;
+
+const breadcrumbItems = [
+  { name: siteName, url: siteUrl },
+  { name: "Guides", url: toAbsoluteUrl(baseUrl, "/posts") },
+  ...(category
+    ? [
+        {
+          name: String(category),
+          url: toAbsoluteUrl(baseUrl, `/category/${String(category).trim().toLowerCase()}`),
+        },
+      ]
+    : []),
+  { name: String(post.data.title), url: canonicalUrl },
+];
+
+const breadcrumbJsonLd = buildBreadcrumbList(breadcrumbItems);
+const articleJsonLd = buildArticleJsonLd({
+  canonicalUrl,
+  headline: String(post.data.title),
+  description: post.data.description ? String(post.data.description) : undefined,
+  imageUrl: ogImageUrl,
+  datePublished: datePublishedIso,
+  dateModified: datePublishedIso,
+  siteName,
+  siteUrl,
+  logoUrl,
+});
 
 // Raw markdown body (no frontmatter)
 const rawBody = String(post.body ?? "");
@@ -251,7 +350,13 @@ if (Array.isArray(picks) && picks.length > 0) {
   description={post.data.description}
   canonical={canonical}
   ogImage={ogImage}
+  ogType="article"
 >
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
+    <script type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} />
+  </Fragment>
+
   <PostLayout
     title={post.data.title}
     description={post.data.description}
@@ -277,6 +382,16 @@ if (Array.isArray(picks) && picks.length > 0) {
 
     <!-- Any other sections after How (still before picks) -->
     {afterHowHtml ? <div class="prose" set:html={afterHowHtml} /> : null}
+
+    <!-- ✅ Affiliate disclosure near CTAs (before first pick link) -->
+    <aside class="affiliate-box" aria-label="Affiliate disclosure">
+      <div class="affiliate-title">Affiliate disclosure</div>
+      <div class="affiliate-body">
+        Some links may be affiliate links. If you buy through them, we may earn a
+        commission at no extra cost to you.
+        <a class="affiliate-link" href="#affiliate-disclosure">Learn more</a>
+      </div>
+    </aside>
 
     <!-- Picks -->
     <section class="picks" aria-label="The picks">
@@ -305,6 +420,45 @@ if (Array.isArray(picks) && picks.length > 0) {
         );
       })}
     </section>
+
+    {(newerPost || olderPost) ? (
+      <nav class="np" aria-label="More guides">
+        <div class="np-head">More guides</div>
+
+        <div class="np-grid">
+          {newerPost ? (
+            <a class="np-card" href={`/posts/${newerPost.slug}`}>
+              <div class="np-kicker">Newer guide</div>
+              <div class="np-title">{newerPost.data.title}</div>
+              <div class="np-meta">{formatDateShort(newerPost.data.publishedAt)}</div>
+            </a>
+          ) : null}
+
+          {olderPost ? (
+            <a class="np-card" href={`/posts/${olderPost.slug}`}>
+              <div class="np-kicker">Older guide</div>
+              <div class="np-title">{olderPost.data.title}</div>
+              <div class="np-meta">{formatDateShort(olderPost.data.publishedAt)}</div>
+            </a>
+          ) : null}
+        </div>
+      </nav>
+    ) : null}
+
+    {relatedPosts.length ? (
+      <section class="related" aria-label="Related guides">
+        <h2 class="related-head">Related guides</h2>
+
+        <div class="related-list">
+          {relatedPosts.map((rp) => (
+            <a class="related-item" href={`/posts/${rp.slug}`}>
+              <span class="related-title">{rp.data.title}</span>
+              <span class="related-date">{formatDateShort(rp.data.publishedAt)}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    ) : null}
 
     <Fragment slot="sidebar">
       <div class="side-stack">
@@ -495,11 +649,158 @@ if (Array.isArray(picks) && picks.length > 0) {
         color: rgba(55, 65, 81, 0.75);
       }
 
+      /* -----------------------------
+         Affiliate callout styling
+         ----------------------------- */
+      .affiliate-box {
+        max-width: none;
+        width: 100%;
+        margin: 18px 0 6px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1px solid rgba(245, 158, 11, 0.28);
+        background: rgba(245, 158, 11, 0.08);
+        color: rgba(17, 24, 39, 0.9);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .affiliate-title {
+        font-weight: 850;
+        letter-spacing: -0.01em;
+        margin-bottom: 4px;
+      }
+
+      .affiliate-link {
+        margin-left: 8px;
+        font-weight: 800;
+        color: rgb(29, 78, 216);
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .affiliate-link:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
       /* General prose defaults (so markdown renders nicely) */
       .prose :global(p) { margin: 12px 0; }
       .prose :global(ul), .prose :global(ol) { margin: 14px 0 14px 20px; padding-left: 18px; }
       .prose :global(li) { margin: 8px 0; }
       .prose :global(a) { text-decoration: underline; text-underline-offset: 3px; }
+
+      /* -----------------------------
+         Next/prev + related
+         ----------------------------- */
+      .np {
+        max-width: 72ch;
+        margin-top: 28px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(17, 24, 39, 0.08);
+      }
+
+      .np-head {
+        font-size: 13px;
+        font-weight: 850;
+        color: rgba(17, 24, 39, 0.9);
+        letter-spacing: -0.01em;
+      }
+
+      .np-grid {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      @media (min-width: 640px) {
+        .np-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .np-card {
+        text-decoration: none;
+        color: inherit;
+        border: 1px solid rgba(17, 24, 39, 0.10);
+        background: rgba(17, 24, 39, 0.02);
+        border-radius: 16px;
+        padding: 14px;
+      }
+
+      .np-card:hover {
+        border-color: rgba(37, 99, 235, 0.28);
+        background: rgba(37, 99, 235, 0.04);
+      }
+
+      .np-kicker {
+        font-size: 12px;
+        font-weight: 800;
+        color: rgba(55, 65, 81, 0.75);
+      }
+
+      .np-title {
+        margin-top: 6px;
+        font-size: 14px;
+        font-weight: 850;
+        letter-spacing: -0.01em;
+        color: rgba(17, 24, 39, 0.92);
+        line-height: 1.25;
+      }
+
+      .np-meta {
+        margin-top: 6px;
+        font-size: 12px;
+        color: rgba(55, 65, 81, 0.7);
+      }
+
+      .related {
+        max-width: 72ch;
+        margin-top: 18px;
+      }
+
+      .related-head {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 900;
+        letter-spacing: -0.01em;
+        color: rgba(17, 24, 39, 0.95);
+      }
+
+      .related-list {
+        margin-top: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .related-item {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        text-decoration: none;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(17, 24, 39, 0.08);
+        background: rgba(255, 255, 255, 0.6);
+        color: rgba(17, 24, 39, 0.88);
+      }
+
+      .related-item:hover {
+        border-color: rgba(37, 99, 235, 0.22);
+        background: rgba(37, 99, 235, 0.04);
+      }
+
+      .related-title {
+        font-weight: 800;
+        line-height: 1.25;
+      }
+
+      .related-date {
+        font-size: 12px;
+        color: rgba(55, 65, 81, 0.7);
+        white-space: nowrap;
+      }
     </style>
   </PostLayout>
 </SiteLayout>

@@ -7,7 +7,9 @@ import { wrapMethodologyCallout } from "./src/lib/remark/wrapMethodologyCallout.
 console.log("[astro.config] methodology plugin is", typeof wrapMethodologyCallout);
 
 export default defineConfig({
-  site: "http://localhost:4321",
+  site:
+    process.env.SITE_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:4321"),
   integrations: [tailwind()],
   markdown: {
     // wrappers first (no injectors)

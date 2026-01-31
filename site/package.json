@@ -4,12 +4,12 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "prebuild": "bash ./scripts/validate_content.sh",
+    "prebuild": "node ./scripts/validate_content.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "validate": "bash ./scripts/validate_content.sh",
-    "validate:fix": "bash ./scripts/validate_content.sh --fix"
+    "validate": "node ./scripts/validate_content.mjs",
+    "validate:fix": "node ./scripts/validate_content.mjs --fix"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^6.3.10",

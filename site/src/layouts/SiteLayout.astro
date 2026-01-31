@@ -9,7 +9,15 @@ const {
   description = taxonomy.brand.tagline,
   canonical, // optional relative or absolute
   ogImage, // optional absolute or relative URL to an image
+  ogType = "website", // e.g. "website" | "article"
+  twitterCard,
+  noIndex = false,
 } = Astro.props;
+
+const siteName = taxonomy.brand.name;
+const baseTitle = String(title || siteName).trim();
+const pageTitle = baseTitle === siteName ? siteName : `${baseTitle} | ${siteName}`;
+const pageDescription = String(description || "").trim();
 
 const canonicalUrl = canonical
   ? new URL(canonical, Astro.site ?? "http://localhost").toString()
@@ -31,21 +39,32 @@ const BRAND_ICON_SRC = "/brand/logo-icon.png";
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+
+    {noIndex ? <meta name="robots" content="noindex, nofollow" /> : null}
 
     {canonicalUrl ? <link rel="canonical" href={canonicalUrl} /> : null}
 
-    <meta property="og:site_name" content={taxonomy.brand.name} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:type" content={String(ogType || "website")} />
     {canonicalUrl ? <meta property="og:url" content={canonicalUrl} /> : null}
     {ogImageUrl ? <meta property="og:image" content={ogImageUrl} /> : null}
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <meta
+      name="twitter:card"
+      content={
+        twitterCard
+          ? String(twitterCard)
+          : ogImageUrl
+            ? "summary_large_image"
+            : "summary"
+      }
+    />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
     {ogImageUrl ? <meta name="twitter:image" content={ogImageUrl} /> : null}
 
     <slot name="head" />

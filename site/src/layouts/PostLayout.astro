@@ -93,6 +93,8 @@ const categoriesUnique = categoryIds.filter((c) => {
             <img
               src={resolvedHeroImage ?? "/images/placeholder-hero.webp"}
               alt={safeHeroAlt}
+              width="1600"
+              height="500"
               loading="eager"
               decoding="async"
               class="hero-img"
@@ -169,6 +171,8 @@ const categoriesUnique = categoryIds.filter((c) => {
 
       <span class="chip">Curated picks</span>
       <span class="chip">Skimmable + practical</span>
+
+      <a class="chip chip-jump" href="#the-picks">Jump to picks</a>
     </div>
   </header>
 
@@ -181,7 +185,7 @@ const categoriesUnique = categoryIds.filter((c) => {
         </div>
       </div>
 
-      <div class="post-disclosure">
+      <div class="post-disclosure" id="affiliate-disclosure">
         <p class="disc-title">Affiliate disclosure</p>
         <p class="disc-body">
           Some links may be affiliate links. If you buy through them, we may earn a
@@ -330,6 +334,19 @@ const categoriesUnique = categoryIds.filter((c) => {
     background: rgba(17, 24, 39, 0.02);
   }
 
+  .chip-jump {
+    border-color: rgba(37, 99, 235, 0.22);
+    background: rgba(37, 99, 235, 0.06);
+    color: rgba(29, 78, 216, 0.95);
+  }
+
+  /* Hide the extra jump chip on desktop where sidebar already provides it */
+  @media (min-width: 1024px) {
+    .chip-jump {
+      display: none;
+    }
+  }
+
   .post-grid {
     margin-top: 18px;
     display: grid;
@@ -351,7 +368,7 @@ const categoriesUnique = categoryIds.filter((c) => {
   }
 
   .prose-premium {
-    max-width: 72ch;
+    max-width: none;
     font-size: 16.5px;
     line-height: 1.72;
   }

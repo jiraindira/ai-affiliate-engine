@@ -8,6 +8,12 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -49,9 +55,9 @@ a {
 
 /* Optional: nicer focus ring */
 :focus-visible {
-  outline: 2px solid rgba(37, 99, 235, 0.7);
+  outline: 3px solid rgba(37, 99, 235, 0.55);
   outline-offset: 3px;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 /* Optional: keep long strings from breaking layout */
