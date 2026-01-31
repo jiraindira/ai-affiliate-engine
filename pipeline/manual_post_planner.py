@@ -161,6 +161,8 @@ class ManualPostPlanner:
         "category": "...",
         "subcategory": "...",
         "audience": "...",
+                "seed_title": "...",  # optional: suggested title / override
+                "seed_description": "...",  # optional: raw intent/description for intro framing
         "source_url": "...",
         "products": [
           {"name": "...", "url": "...", "rating": 4.6, "reviews_count": 1234, "price": "£..", "status": "ok"}

@@ -41,6 +41,18 @@ def _slugify(text: str) -> str:
     return s.strip("-")
 
 
+def _truncate_title_max_chars(title: str, max_chars: int) -> str:
+    s = (title or "").strip()
+    if not s:
+        return s
+    if len(s) <= max_chars:
+        return s
+    cut = s[:max_chars].rstrip()
+    if " " in cut:
+        cut = cut.rsplit(" ", 1)[0].rstrip()
+    return cut.rstrip(" .!?,;:")
+
+
 def _is_valid_http_url(url: str) -> bool:
     """
     Hard-fail URL validator: requires a fully-qualified http(s) URL with a netloc.
@@ -209,6 +221,14 @@ class ManualPostWriter:
         audience = raw.get("audience", "UK readers")
         raw_products = raw.get("products", [])
 
+        # Optional user-provided guidance
+        seed_title = str(raw.get("seed_title") or "").strip() or None
+        seed_description = str(raw.get("seed_description") or "").strip() or None
+
+        # Back-compat aliases (soft hints)
+        user_hint_title = str(raw.get("user_hint_title") or "").strip() or None
+        user_hint_description = str(raw.get("user_hint_description") or "").strip() or None
+
         if len(raw_products) < 3:
             raise RuntimeError("post_input.json must contain at least 3 products")
 
@@ -243,14 +263,22 @@ class ManualPostWriter:
         # Title + slug
         llm = OpenAIJsonLLM()
         title_agent = FinalTitleAgent(llm=llm, config=FinalTitleConfig(max_chars=60))
-        title = title_agent.run(
-            topic=subcategory or category,
-            category=category,
-            intro="",
-            picks=[],
-            products=products,
-            alternatives=None,
-        )
+
+        if seed_title:
+            # Respect user-provided title but keep formatting consistent.
+            title = _truncate_title_max_chars(seed_title, 60)
+        else:
+            title = title_agent.run(
+                topic=subcategory or category,
+                category=category,
+                # Give the title agent a hint even before depth runs.
+                intro=seed_description or user_hint_description or "",
+                picks=[],
+                products=products,
+                alternatives=None,
+                user_hint_title=user_hint_title,
+                user_hint_description=seed_description or user_hint_description,
+            )
 
         slug = f"{post_date}-{_slugify(title)}"
         self._log(f"🟢 Writing post: {slug}")
@@ -355,6 +383,8 @@ class ManualPostWriter:
                 rewrite_mode="upgrade",
                 max_added_words=sum(m.max_words for m in modules),
                 voice="neutral",
+                seed_title=seed_title or user_hint_title,
+                seed_description=seed_description or user_hint_description,
                 faqs=[],
                 forbid_claims_of_testing=True,
             )

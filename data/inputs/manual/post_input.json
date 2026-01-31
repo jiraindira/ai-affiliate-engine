@@ -1,71 +1,73 @@
 {
-  "category": "home",
-  "subcategory": "rain boots",
+  "category": "travel",
+  "subcategory": "umbrellas_ponchos_raincoats",
   "audience": "UK shoppers",
-  "source_url": "https://www.amazon.co.uk/s?k=rain+boots&crid=3KSDOCO9R4F0N&sprefix=rain+boots%2Caps%2C144&ref=nb_sb_noss_1",
+  "seed_title": "Travel rain gear essentials",
+  "seed_description": "A short, practical guide for UK travellers on what to pack for wet weather. Keep it UK-general (don’t overfit to London).",
+  "source_url": "https://www.amazon.co.uk/s?k=rainware&crid=1K6ZAKXWPXO3C&sprefix=rainwate%2Caps%2C134&ref=nb_sb_noss_2",
   "products": [
     {
-      "name": "Hunter Original Tall, Women's Rain Boots",
-      "url": "https://amzn.to/4tfg7f5",
+      "name": "Golf Umbrella Windproof Large 62/68 Inch, Double Canopy Vented",
+      "url": "https://amzn.to/3M0XYAE",
+      "rating": 4.6,
+      "reviews_count": 12714,
+      "price": "£23.99",
+      "status": "ok"
+    },
+    {
+      "name": "Repel Umbrella Windproof Travel Umbrellas - Compact and Fiberglass Frame",
+      "url": "https://amzn.to/4akYQJQ",
       "rating": 4.3,
-      "reviews_count": 3663,
-      "price": "£69",
+      "reviews_count": 102129,
+      "price": "£19.99",
       "status": "ok"
     },
     {
-      "name": "DUNLOP Pricemastor - Unisex Knee High Wellington Rain Boots for Outdoor and Gardening",
-      "url": "https://amzn.to/4rfeJXQ",
+      "name": "Fulton Huntsman Umbrella Black",
+      "url": "https://amzn.to/4q9eyfR",
       "rating": 4.5,
-      "reviews_count": 24946,
-      "price": "£16.77",
+      "reviews_count": 1324,
+      "price": "£26.88",
       "status": "ok"
     },
     {
-      "name": "Lakeland Active Women's Rydal Neoprene Insulated Wellington Boots",
-      "url": "https://amzn.to/3NMDNY0",
-      "rating": 4.1,
-      "reviews_count": 2589,
-      "price": "£79.99",
-      "status": "ok"
-    },
-    {
-      "name": "DUNLOP Short Leg Half-Height Wellies",
-      "url": "https://amzn.to/49Rmbmo",
+      "name": "Victoper Adult Lightweight Waterproof Raincoat",
+      "url": "https://amzn.to/3LS43iZ",
       "rating": 4.4,
-      "reviews_count": 28323,
+      "reviews_count": 2136,
       "price": "£14.99",
       "status": "ok"
     },
     {
-      "name": "DREAM PAIRS Wellington Boots Women and Men Ankle",
-      "url": "https://amzn.to/4tdbJxa",
+      "name": "ANYOO Waterproof Rain Poncho Lightweight Reusable",
+      "url": "https://amzn.to/4tpLRhJ",
       "rating": 4.4,
-      "reviews_count": 5489,
-      "price": "£16.99",
+      "reviews_count": 20985,
+      "price": "£18.99",
       "status": "ok"
     },
     {
-      "name": "DUNLOP Kids Blizzard Wellington Rain Boots",
-      "url": "https://amzn.to/4qcTg0X",
-      "rating": 4.4,
-      "reviews_count": 9845,
-      "price": "£15.43",
-      "status": "ok"
-    },
-    {
-      "name": "Kids Lined Wellies, Winter Warm Fleece Rain Boots",
-      "url": "https://amzn.to/4q37pgT",
-      "rating": 4.7,
-      "reviews_count": 1072,
-      "price": "£22.99",
-      "status": "ok"
-    },
-    {
-      "name": "Zorax Waterproof Non-Slip Wellies for Kids",
-      "url": "https://amzn.to/3LHyKaF",
+      "name": "Kids Raincoats Rain Poncho",
+      "url": "https://amzn.to/49OtDhX",
       "rating": 4.5,
-      "reviews_count": 4020,
-      "price": "£11.98",
+      "reviews_count": 1047,
+      "price": "£13.90",
+      "status": "ok"
+    },
+    {
+      "name": "Cosowe Rain Poncho Raincoats for Adults",
+      "url": "https://amzn.to/3NXuJzm",
+      "rating": 4.4,
+      "reviews_count": 4481,
+      "price": "£8.97",
+      "status": "ok"
+    },
+    {
+      "name": "Outdoor Ventures Softshell Ladies Rain Jacket",
+      "url": "https://amzn.to/3ZapD5i",
+      "rating": 4.5,
+      "reviews_count": 2451,
+      "price": "£57.99",
       "status": "ok"
     }
   ]
