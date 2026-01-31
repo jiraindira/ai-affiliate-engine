@@ -5,7 +5,14 @@ import json
 import os
 import shutil
 import importlib
+import sys
 from pathlib import Path
+
+# Ensure repository root is on sys.path so imports like `lib.*` resolve when
+# running this file as `python scripts/test_image_generation.py`.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from lib.env import load_env
 
@@ -20,11 +27,12 @@ def _require_env(name: str) -> str:
 
 
 def _readable_size(n: int) -> str:
+    size = float(n)
     for unit in ["B", "KB", "MB", "GB"]:
-        if n < 1024 or unit == "GB":
-            return f"{n:.0f}{unit}" if unit == "B" else f"{n/1024:.1f}{unit}"
-        n /= 1024
-    return f"{n:.1f}GB"
+        if size < 1024 or unit == "GB":
+            return f"{size:.0f}B" if unit == "B" else f"{size:.1f}{unit}"
+        size /= 1024.0
+    return f"{size:.1f}GB"
 
 
 def _verify_image(path: Path) -> tuple[int, int, str]:
