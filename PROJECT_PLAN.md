@@ -152,7 +152,7 @@ Template:
 - [ ] M7-T7: Add OpenGraph image strategy (default OG image + per-post OG where missing). (owner: agent) (estimate: M)
 - [ ] M7-T8: Performance pass (Lighthouse: LCP/CLS) and fix top offenders. (owner: agent) (estimate: M)
 - [x] M7-T9: Embed Google Analytics 4 (GA4) via `gtag.js` in the site layout (env-driven + prod-only). (owner: agent) (estimate: S)
-- [ ] M7-T10: Verify GA4 receives page_view + track key engagement events (affiliate CTA click, “Jump to picks”). (owner: agent) (estimate: M)
+- [x] M7-T10: Verify GA4 receives page_view + track key engagement events (affiliate CTA click, “Jump to picks”). (owner: agent) (estimate: M)
 - [x] M7-T11: Collapse bottom-of-post navigation to a single “More guides” section. (owner: agent) (estimate: S)
 - [x] M7-T12: Tighten guide card spacing on /posts (reduced vertical gaps). (owner: agent) (estimate: S)
 - [x] M7-T13: Improve post content heading styles (make “Intro” and other H2/H3 less muted). (owner: agent) (estimate: S)
@@ -160,8 +160,8 @@ Template:
 - [x] M7-T15: Add cookie consent banner (bottom) that gates analytics loading. (owner: agent) (estimate: M)
 - [x] M7-T16: Track all outbound link clicks (after consent) via a single delegated click handler. (owner: agent) (estimate: M)
 - [x] M7-T17: Set `PUBLIC_GA_MEASUREMENT_ID` in Vercel (Production + Preview if desired). (owner: human) (estimate: S)
-- [ ] M7-T18: Deploy latest site changes and verify `/cookies` resolves + cookie banner appears on production. (owner: human) (estimate: S)
-- [ ] M7-T19: Fix prod GA env injection (ensure `const GA_ID = "G-..."` in page source) and redeploy. (owner: human) (estimate: S)
+- [x] M7-T18: Deploy latest site changes and verify `/cookies` resolves + cookie banner appears on production. (owner: human) (estimate: S)
+- [x] M7-T19: Fix prod GA env injection (ensure `const GA_ID = "G-..."` in page source) and redeploy. (owner: human) (estimate: S)
 
 ---
 
@@ -180,3 +180,4 @@ Template:
 - 2026-01-31 — agent — Completed: M7-T17 — Evidence: user confirmed Vercel env var `PUBLIC_GA_MEASUREMENT_ID` set
 - 2026-01-31 — agent — Completed: M7-T18 — Evidence: `git push`, `Invoke-WebRequest https://theproductwheel.com/`, `Invoke-WebRequest https://theproductwheel.com/cookies`
 - 2026-01-31 — agent — Correction: Re-opened M7-T18; added M7-T19 — Evidence: `Invoke-WebRequest https://theproductwheel.com/` shows `const GA_ID = ""` (banner stays hidden)
+- 2026-01-31 — agent — Completed: M7-T10, M7-T18, M7-T19 — Evidence: user confirmed `outbound_click` seen in GA4; `Invoke-WebRequest https://theproductwheel.com/` shows `ga_id=G-PFEMFC85Z4`; `Invoke-WebRequest https://theproductwheel.com/cookies` status 200
