@@ -106,24 +106,22 @@ Hero establishes purpose and flows directly into content.
 ## 4. Categories Interaction
 
 ### Requirement
-Replace category pills with a single intentional entry point.
+Replace category pills with an intentional, mobile-friendly browse section.
 
 ### Changes
 - Remove category pills entirely
-- Introduce **“View Categories”** button
+- Show categories as **placecards** in a **2-column grid** on mobile (responsive up)
 
 ### Behavior
-- Button opens a lightweight modal
-- Categories listed **with counts** formatted like `(7)`
-- Modal has an explicit **X** close button
-- No filtering UI visible by default
+- Placecards link to the group pages (e.g. `/posts/tech`)
+- Counts are shown as `(N)`
+- Keep the browse UI calm and scannable (no “pill bar”)
 
 ### Acceptance Criteria
 - No category pills visible
-- Exactly one category entry control exists
 - Categories are discoverable but not dominant
 - Counts are shown as `(N)`
-- Close affordance includes a clear X button
+
 
 ---
 
