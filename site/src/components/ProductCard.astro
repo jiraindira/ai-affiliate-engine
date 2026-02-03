@@ -39,6 +39,17 @@ const hasBodyHtml = typeof bodyHtml === "string" && bodyHtml.trim().length > 0;
  * Our precedence is: bodyHtml (author markdown) > description (frontmatter) > nothing.
  */
 const hasDesc = typeof description === "string" && description.trim().length > 0;
+
+function normalizeText(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+const titleNorm = normalizeText(title);
+const descNorm = normalizeText(description);
+const showDesc = hasDesc && descNorm.length > 0 && descNorm !== titleNorm;
 ---
 
 <article class="pick">
@@ -77,7 +88,7 @@ const hasDesc = typeof description === "string" && description.trim().length > 0
     <div class="desc-wrap">
       {hasBodyHtml ? (
         <div class="pick-prose" set:html={bodyHtml} />
-      ) : hasDesc ? (
+      ) : showDesc ? (
         <p class="desc">{description}</p>
       ) : null}
     </div>
@@ -103,11 +114,11 @@ const hasDesc = typeof description === "string" && description.trim().length > 0
 
 <style>
   .pick {
-    padding: 12px 0 14px; /* ✅ tighter vertical rhythm between picks */
+    padding: 8px 0 10px; /* ✅ tighter vertical rhythm between picks */
   }
 
   .pick-rating {
-    margin-top: 4px; /* ✅ slightly tighter */
+    margin-top: 2px; /* ✅ slightly tighter */
     font-size: 14px;
     color: rgba(55, 65, 81, 0.85);
     display: flex;
@@ -148,7 +159,7 @@ const hasDesc = typeof description === "string" && description.trim().length > 0
   }
 
   .content-row {
-    margin-top: 10px; /* ✅ tighter */
+    margin-top: 8px; /* ✅ tighter */
     display: flex;
     align-items: flex-start;
     gap: 18px; /* ✅ slightly tighter */
@@ -186,7 +197,7 @@ const hasDesc = typeof description === "string" && description.trim().length > 0
   }
 
   .pick-prose :global(p) {
-    margin: 0 0 8px; /* ✅ reduced paragraph spacing (biggest win) */
+    margin: 0 0 6px; /* ✅ reduced paragraph spacing (biggest win) */
     font-size: 18px;
     line-height: 1.8;
     color: rgba(17, 24, 39, 0.88);

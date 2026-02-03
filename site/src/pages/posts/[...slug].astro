@@ -439,16 +439,6 @@ if (Array.isArray(picks) && picks.length > 0) {
     <!-- Any other sections after How (still before picks) -->
     {afterHowHtml ? <div class="prose" set:html={afterHowHtml} /> : null}
 
-    <!-- ✅ Affiliate disclosure near CTAs (before first pick link) -->
-    <aside class="affiliate-box" aria-label="Affiliate disclosure">
-      <div class="affiliate-title">Affiliate disclosure</div>
-      <div class="affiliate-body">
-        Some links may be affiliate links. If you buy through them, we may earn a
-        commission at no extra cost to you.
-        <a class="affiliate-link" href="#affiliate-disclosure">Learn more</a>
-      </div>
-    </aside>
-
     <!-- Picks -->
     <section class="picks" aria-label="The picks">
       <h2 id="the-picks">The picks</h2>
@@ -459,7 +449,7 @@ if (Array.isArray(picks) && picks.length > 0) {
         const bodyHtml = mdToHtml(bodyMd);
 
         return (
-          <div class="pick">
+          <section class="pick-block">
             <h3 id={slugifyHeading(p.title)}>{p.title}</h3>
 
             <div class="pick-card-wrap">
@@ -472,7 +462,7 @@ if (Array.isArray(picks) && picks.length > 0) {
                 bodyHtml={bodyHtml}
               />
             </div>
-          </div>
+          </section>
         );
       })}
     </section>
@@ -530,6 +520,12 @@ if (Array.isArray(picks) && picks.length > 0) {
 
       <style>
         .side-stack { display: grid; gap: 12px; }
+
+        @media (max-width: 1023px) {
+          .side-stack {
+            display: none;
+          }
+        }
 
         .sidecard-lite {
           background: rgba(255, 255, 255, 0.95);
@@ -610,18 +606,18 @@ if (Array.isArray(picks) && picks.length > 0) {
         max-width: 72ch;
       }
 
-      .pick {
-        margin-top: 22px;
+      .pick-block {
+        margin-top: 18px;
       }
 
       .pick-card-wrap {
-        margin: 10px 0 14px;
+        margin: 8px 0 10px;
         max-width: 72ch;
       }
 
       .picks > h2 {
-        margin-top: 40px;
-        margin-bottom: 20px;
+        margin-top: 34px;
+        margin-bottom: 14px;
         font-size: 26px;
         font-weight: 800;
         letter-spacing: -0.02em;
@@ -629,7 +625,7 @@ if (Array.isArray(picks) && picks.length > 0) {
       }
 
       .picks h3 {
-        margin-top: 28px;
+        margin-top: 0;
         margin-bottom: 6px;
         font-size: 20px;
         font-weight: 750;
@@ -637,9 +633,9 @@ if (Array.isArray(picks) && picks.length > 0) {
         color: #111827;
       }
 
-      .pick + .pick {
-        margin-top: 28px;
-        padding-top: 24px;
+      .pick-block + .pick-block {
+        margin-top: 20px;
+        padding-top: 16px;
         border-top: 1px solid rgba(17, 24, 39, 0.08);
       }
 
@@ -680,40 +676,6 @@ if (Array.isArray(picks) && picks.length > 0) {
 
       .how-prose :global(li::marker) {
         color: rgba(55, 65, 81, 0.75);
-      }
-
-      /* -----------------------------
-         Affiliate callout styling
-         ----------------------------- */
-      .affiliate-box {
-        max-width: none;
-        width: 100%;
-        margin: 18px 0 6px;
-        padding: 14px 16px;
-        border-radius: 16px;
-        border: 1px solid rgba(245, 158, 11, 0.28);
-        background: rgba(245, 158, 11, 0.08);
-        color: rgba(17, 24, 39, 0.9);
-        font-size: 13px;
-        line-height: 1.55;
-      }
-
-      .affiliate-title {
-        font-weight: 850;
-        letter-spacing: -0.01em;
-        margin-bottom: 4px;
-      }
-
-      .affiliate-link {
-        margin-left: 8px;
-        font-weight: 800;
-        color: rgb(29, 78, 216);
-        text-decoration: none;
-        white-space: nowrap;
-      }
-      .affiliate-link:hover {
-        text-decoration: underline;
-        text-underline-offset: 3px;
       }
 
       /* General prose defaults (so markdown renders nicely) */
