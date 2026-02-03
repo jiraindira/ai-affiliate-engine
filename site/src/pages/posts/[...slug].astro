@@ -273,6 +273,28 @@ function normalizeHowChosenToBullets(sectionMd) {
   return `${headingLine}\n\n${intro}\n\n${items.join("\n")}`.trim();
 }
 
+/**
+ * Remove a leading "## Intro" heading from markdown so the page can render
+ * the intro text without the literal "Intro" label.
+ */
+function stripLeadingIntroHeading(md) {
+  const lines = String(md || "").split("\n");
+  if (!lines.length) return "";
+
+  // Skip leading blanks
+  let i = 0;
+  while (i < lines.length && lines[i].trim() === "") i++;
+
+  // If the first non-empty line is "## Intro", drop it and following blank line(s)
+  if (/^##\s+intro\s*$/i.test(lines[i] ?? "")) {
+    i++;
+    while (i < lines.length && lines[i].trim() === "") i++;
+    return lines.slice(i).join("\n").trim();
+  }
+
+  return String(md || "").trim();
+}
+
 // Extract per-pick markdown blocks from the picks section using the contract:
 // <!-- pick_id: X -->
 // ### Title
@@ -350,8 +372,10 @@ const { pre: prePicksMarkdown, picksSection } = splitBeforePicks(rawBody);
 const { beforeHow, howSection, afterHow } = splitHowChosenSection(prePicksMarkdown);
 const howSectionNormalized = normalizeHowChosenToBullets(howSection);
 
+const introMarkdown = stripLeadingIntroHeading(beforeHow);
+
 // Markdown -> HTML (server-side)
-const beforeHowHtml = beforeHow ? marked.parse(beforeHow) : "";
+const introHtml = introMarkdown ? marked.parse(introMarkdown) : "";
 const howHtml = howSectionNormalized ? marked.parse(howSectionNormalized) : "";
 const afterHowHtml = afterHow ? marked.parse(afterHow) : "";
 
@@ -403,10 +427,8 @@ if (Array.isArray(picks) && picks.length > 0) {
     imageCreditUrl={post.data.imageCreditUrl}
     readingTime={null}
     toc={[]}
+    introHtml={introHtml}
   >
-    <!-- Intro (before How section) -->
-    {beforeHowHtml ? <div class="prose" set:html={beforeHowHtml} /> : null}
-
     <!-- ✅ How chosen callout -->
     {howHtml ? (
       <section class="how-box" aria-label="How this list was chosen">

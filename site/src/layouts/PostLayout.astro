@@ -21,6 +21,7 @@ const {
   imageCreditUrl,
   readingTime,
   toc = [],
+  introHtml,
 } = Astro.props;
 
 // Detect whether heroImage is a public URL (/images/...) or an asset path
@@ -84,9 +85,9 @@ const categoriesUnique = categoryIds.filter((c) => {
 });
 ---
 
-<section class="post-shell">
-  <header class="post-header">
-    {showHero && (
+<section class="post-root">
+  {showHero && (
+    <div class="hero-bleed">
       <figure class="hero">
         <div class="hero-frame">
           {isPublicHero ? (
@@ -107,76 +108,65 @@ const categoriesUnique = categoryIds.filter((c) => {
               width={heroAsset.width}
               height={heroAsset.height}
               class="hero-img"
-              sizes="(min-width: 1024px) 960px, 100vw"
+              sizes="100vw"
               loading="eager"
               decoding="async"
             />
           )}
-        </div>  
-
-        {(imageCreditName || imageCreditUrl) && (
-          <figcaption class="hero-credit">
-            Image credit:{" "}
-            {imageCreditUrl ? (
-              <a href={imageCreditUrl} class="hero-credit-link">
-                {imageCreditName ?? "Source"}
-              </a>
-            ) : (
-              <span>{imageCreditName}</span>
-            )}
-          </figcaption>
-        )}
+        </div>
       </figure>
-    )}
-
-    <div class="post-meta">
-      <span class="post-date">{dateLabel}</span>
-
-      {categoriesUnique.length > 0 ? <span class="post-dot">•</span> : null}
-
-      {categoriesUnique.length > 0 ? (
-        <span class="post-cats">
-          {categoriesUnique.map((c, idx) => (
-            <>
-              <a class="post-cat" href={`/category/${c}`}>
-                {humanizeCategory(c)}
-              </a>
-              {idx < categoriesUnique.length - 1 ? (
-                <span class="post-cat-sep">,</span>
-              ) : null}
-            </>
-          ))}
-        </span>
-      ) : null}
-
-      {readingTime ? <span class="post-dot">•</span> : null}
-      {readingTime ? <span class="post-rt">{readingTime} min read</span> : null}
     </div>
+  )}
 
-    <h1 class="post-title">{title}</h1>
+  <div class="post-shell">
+    <header class="post-header">
+      {(imageCreditName || imageCreditUrl) && (
+        <div class="hero-credit hero-credit-contained">
+          Image credit:{" "}
+          {imageCreditUrl ? (
+            <a href={imageCreditUrl} class="hero-credit-link">
+              {imageCreditName ?? "Source"}
+            </a>
+          ) : (
+            <span>{imageCreditName}</span>
+          )}
+        </div>
+      )}
 
-    {description ? <p class="post-desc">{description}</p> : null}
+      <div class="post-meta">
+        <span class="post-date">{dateLabel}</span>
 
-    <div class="post-chips">
-      {audience ? (
-        <span class="chip chip-audience">Audience: {audience}</span>
+        {categoriesUnique.length > 0 ? <span class="post-dot">•</span> : null}
+
+        {categoriesUnique.length > 0 ? (
+          <span class="post-cats">
+            {categoriesUnique.map((c, idx) => (
+              <>
+                <a class="post-cat" href={`/category/${c}`}>
+                  {humanizeCategory(c)}
+                </a>
+                {idx < categoriesUnique.length - 1 ? (
+                  <span class="post-cat-sep">,</span>
+                ) : null}
+              </>
+            ))}
+          </span>
+        ) : null}
+
+        {readingTime ? <span class="post-dot">•</span> : null}
+        {readingTime ? <span class="post-rt">{readingTime} min read</span> : null}
+      </div>
+
+      <h1 class="post-title">{title}</h1>
+
+      {introHtml ? (
+        <div class="post-intro prose" set:html={introHtml} />
+      ) : description ? (
+        <p class="post-desc">{description}</p>
       ) : null}
+    </header>
 
-      {/* ✅ Category chips (multi) */}
-      {categoriesUnique.map((c) => (
-        <a class="chip chip-cat" href={`/category/${c}`}>
-          {humanizeCategory(c)}
-        </a>
-      ))}
-
-      <span class="chip">Curated picks</span>
-      <span class="chip">Skimmable + practical</span>
-
-      <a class="chip chip-jump" href="#the-picks">Jump to picks</a>
-    </div>
-  </header>
-
-  <div class="post-grid">
+    <div class="post-grid">
     <main class="post-main">
       <div class="post-article">
         <div class="prose-premium">
@@ -226,26 +216,27 @@ const categoriesUnique = categoryIds.filter((c) => {
         </div>
       </slot>
     </aside>
+    </div>
   </div>
 </section>
 
 <style>
+  .post-root {
+    width: 100%;
+  }
+
   .post-shell {
     max-width: 1120px;
     margin: 0 auto;
-    padding: 28px 24px 64px;
+    padding: 18px 24px 64px;
   }
 
   .post-header {
-    background: #fff;
-    border: 1px solid rgba(17, 24, 39, 0.08);
-    border-radius: 18px;
-    padding: 26px;
-    box-shadow: 0 1px 0 rgba(17, 24, 39, 0.03);
+    padding: 18px 0 0;
   }
 
   .post-meta {
-    margin-top: 14px;
+    margin-top: 0;
     font-size: 12px;
     color: rgba(55, 65, 81, 0.85);
     display: flex;
@@ -283,7 +274,7 @@ const categoriesUnique = categoryIds.filter((c) => {
   }
 
   .post-title {
-    margin-top: 10px;
+    margin-top: 12px;
     font-size: clamp(30px, 3.4vw, 52px);
     line-height: 1.06;
     letter-spacing: -0.02em;
@@ -297,58 +288,29 @@ const categoriesUnique = categoryIds.filter((c) => {
     max-width: 70ch;
   }
 
-  /* ✅ Pills / chips */
-  .post-chips {
-    margin-top: 14px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+  .post-intro {
+    margin-top: 12px;
+    max-width: 72ch;
+    font-size: 17px;
+    line-height: 1.65;
+    color: rgba(17, 24, 39, 0.78);
   }
 
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    font-size: 13px;
-    font-weight: 650;
-    padding: 7px 12px;
-    border-radius: 999px;
-    border: 1px solid rgba(17, 24, 39, 0.12);
-    background: rgba(17, 24, 39, 0.03);
-    color: rgba(17, 24, 39, 0.82);
-    max-width: 100%;
-    text-decoration: none;
+  .post-intro :global(h2),
+  .post-intro :global(h3) {
+    display: none;
   }
 
-  .chip:hover {
-    border-color: rgba(37, 99, 235, 0.28);
+  .post-intro :global(p) {
+    margin: 0.65rem 0;
   }
 
-  .chip-audience {
-    border-color: rgba(37, 99, 235, 0.22);
-    background: rgba(37, 99, 235, 0.06);
-    color: rgba(17, 24, 39, 0.88);
-  }
-
-  .chip-cat {
-    border-color: rgba(17, 24, 39, 0.12);
-    background: rgba(17, 24, 39, 0.02);
-  }
-
-  .chip-jump {
-    border-color: rgba(37, 99, 235, 0.22);
-    background: rgba(37, 99, 235, 0.06);
-    color: rgba(29, 78, 216, 0.95);
-  }
-
-  /* Hide the extra jump chip on desktop where sidebar already provides it */
-  @media (min-width: 1024px) {
-    .chip-jump {
-      display: none;
-    }
+  .post-intro :global(p:first-child) {
+    margin-top: 0;
   }
 
   .post-grid {
-    margin-top: 18px;
+    margin-top: 16px;
     display: grid;
     grid-template-columns: 1fr;
     gap: 18px;
@@ -361,10 +323,10 @@ const categoriesUnique = categoryIds.filter((c) => {
   }
 
   .post-article {
-    background: #fff;
-    border: 1px solid rgba(17, 24, 39, 0.08);
-    border-radius: 18px;
-    padding: 26px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
   }
 
   .prose-premium {
@@ -398,25 +360,22 @@ const categoriesUnique = categoryIds.filter((c) => {
     margin-top: 0;
   }
 
-  .hero-frame {
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid rgba(17, 24, 39, 0.10);
-    background: rgba(17, 24, 39, 0.02);
-
-    width: 100%;
-    aspect-ratio: 16 / 9;         /* ✅ match generated hero images */
-    max-height: 420px;             /* ✅ keeps it from getting too tall on huge screens */
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .hero-bleed {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
   }
 
-  @media (max-width: 768px) {
-    .hero-frame {
-      height: clamp(200px, 56.25vw, 320px); /* ✅ 16:9-based height on mobile */
-    }
+  .hero-frame {
+    border-radius: 0;
+    overflow: hidden;
+    border: 0;
+    background: rgba(17, 24, 39, 0.04);
+
+    width: 100%;
+    height: clamp(220px, 56.25vw, 560px);
+
+    display: block;
   }
 
   .hero-img {
@@ -436,6 +395,10 @@ const categoriesUnique = categoryIds.filter((c) => {
     margin-top: 8px;
     font-size: 12px;
     color: rgba(55, 65, 81, 0.75);
+  }
+
+  .hero-credit-contained {
+    margin-top: 10px;
   }
 
   .hero-credit-link {
