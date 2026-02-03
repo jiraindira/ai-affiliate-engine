@@ -77,27 +77,29 @@ const BRAND_ICON_SRC = "/brand/logo-icon.png";
     <a class="skip-link" href="#main">Skip to content</a>
 
     <header class="site-header">
-      <div class="site-container header-row">
-        <a href="/" class="brand" aria-label={`${taxonomy.brand.name} home`}>
-          <span class="brand-mark" aria-hidden="true">
-            <img
-              src={BRAND_ICON_SRC}
-              alt=""
-              class="brand-icon-img"
-              loading="eager"
-              decoding="async"
-            />
-          </span>
+      <div class="site-header-bar">
+        <div class="site-container header-row">
+          <a href="/" class="brand" aria-label={`${taxonomy.brand.name} home`}>
+            <span class="brand-mark" aria-hidden="true">
+              <img
+                src={BRAND_ICON_SRC}
+                alt=""
+                class="brand-icon-img"
+                loading="eager"
+                decoding="async"
+              />
+            </span>
 
-          <span class="brand-text">
-            <span class="brand-name">{taxonomy.brand.name}</span>
-            <span class="brand-tagline">{taxonomy.brand.tagline}</span>
-          </span>
-        </a>
+            <span class="brand-text">
+              <span class="brand-name">{taxonomy.brand.name}</span>
+              <span class="brand-tagline">{taxonomy.brand.tagline}</span>
+            </span>
+          </a>
 
-        <nav class="site-nav" aria-label="Primary">
-          <a href="/posts" class="nav-link">Guides</a>
-        </nav>
+          <nav class="site-nav" aria-label="Primary">
+            <a href="/posts" class="nav-link">Guides</a>
+          </nav>
+        </div>
       </div>
 
       <div class="site-disclosure" role="note" aria-label="Affiliate disclosure">
@@ -337,6 +339,10 @@ const BRAND_ICON_SRC = "/brand/logo-icon.png";
 
 <style>
   .site-header {
+    background: transparent;
+  }
+
+  .site-header-bar {
     position: sticky;
     top: 0;
     z-index: 20;
