@@ -2,7 +2,7 @@
 import SiteLayout from "../layouts/SiteLayout.astro";
 import FeaturedGuide from "../components/FeaturedGuide.astro";
 import CategoryPlacecard from "../components/CategoryPlacecard.astro";
-import CondensedGuideCard from "../components/CondensedGuideCard.astro";
+import PreviousPostTile from "../components/PreviousPostTile.astro";
 import { getCollection } from "astro:content";
 import { getTaxonomy } from "../lib/taxonomy";
 import { normalizePostCategories } from "../lib/normalizeCategories";
@@ -132,9 +132,9 @@ const hp = taxonomy.homepage ?? {
           </a>
         </div>
 
-        <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
           {previousPosts.map((post) => (
-            <CondensedGuideCard post={post} taxonomy={taxonomy} />
+            <PreviousPostTile post={post} />
           ))}
         </div>
       </section>
