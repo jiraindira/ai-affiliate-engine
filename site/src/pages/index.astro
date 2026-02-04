@@ -1,9 +1,8 @@
 ---
 import SiteLayout from "../layouts/SiteLayout.astro";
 import FeaturedGuide from "../components/FeaturedGuide.astro";
-import LatestList from "../components/LatestList.astro";
-import TopTopicsNav from "../components/TopTopicsNav.astro";
-import GuideCard from "../components/GuideCard.astro";
+import CategoryPlacecard from "../components/CategoryPlacecard.astro";
+import PreviousPostTile from "../components/PreviousPostTile.astro";
 import { getCollection } from "astro:content";
 import { getTaxonomy } from "../lib/taxonomy";
 import { normalizePostCategories } from "../lib/normalizeCategories";
@@ -30,12 +29,6 @@ posts.sort((a, b) => {
   return b.slug.localeCompare(a.slug);
 });
 
-const featured = posts.slice(0, 3);
-const featuredPrimary = featured[0];
-const featuredSecondary = featured.slice(1);
-const latestList = posts.slice(0, 6);
-const moreGuides = posts.slice(3, 15);
-
 // ✅ Count a post if ANY of its categories intersects the group
 const countsByGroup = taxonomy.groups.reduce((acc, g) => {
   const groupCats = (g.categoryIds ?? g.categories ?? [])
@@ -60,6 +53,10 @@ const navItems = [
     }))
     .filter((it) => (typeof it.count === "number" ? it.count > 0 : true)),
 ];
+
+const featuredPrimary = posts[0];
+const categoryItems = navItems.filter((it) => it.key !== "all");
+const previousPosts = posts.slice(1, 13);
 
 // Homepage copy comes from taxonomy (agent-owned), with safe fallbacks
 const hp = taxonomy.homepage ?? {
@@ -91,58 +88,63 @@ const hp = taxonomy.homepage ?? {
   <h1 class="sr-only">{taxonomy.brand.name}</h1>
   <p class="sr-only">Independent product buying guides and recommendations</p>
 
-  <div class="max-w-6xl mx-auto px-6 pt-12">
-    <!-- TOPICS (taxonomy-driven) -->
-    <TopTopicsNav items={navItems} active="all" />
+  <!-- FEATURED (most recent) -->
+  <section class="w-screen mx-[calc(50%-50vw)] bg-white/80 border-b border-gray-200/60">
+    <div class="max-w-6xl mx-auto px-6 pt-6 pb-4">
+      <h2 class="text-lg font-semibold text-gray-900">Featured guide</h2>
+    </div>
 
-    <!-- MAIN EDITORIAL STRIP -->
-    <section class="mt-12">
-      <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-14 items-start">
-        <!-- LEFT: Latest -->
-        <aside class="hidden lg:block order-2 lg:order-1">
-          <LatestList posts={latestList} title="The latest" viewAllHref="/posts" />
-        </aside>
-
-        <!-- CENTER: Featured -->
-        <div class="order-1 lg:order-2">
-          {featuredPrimary ? (
-            <div>
-              <FeaturedGuide post={featuredPrimary} taxonomy={taxonomy} />
-
-              {featuredSecondary.length ? (
-                <div class="mt-10 grid gap-6 sm:grid-cols-2">
-                  {featuredSecondary.slice(0, 2).map((post) => (
-                    <GuideCard post={post} taxonomy={taxonomy} />
-                  ))}
-                </div>
-              ) : null}
-
-              {moreGuides.length ? (
-                <div class="mt-12">
-                  <div class="flex items-baseline justify-between gap-6">
-                    <h2 class="text-lg font-semibold text-gray-900">More guides</h2>
-                    <a class="text-sm font-semibold text-gray-900 hover:underline" href="/posts">View all</a>
-                  </div>
-
-                  <div class="mt-6 grid gap-6 sm:grid-cols-2">
-                    {moreGuides.map((post) => (
-                      <GuideCard post={post} taxonomy={taxonomy} />
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          ) : (
-            <div class="rounded-3xl border border-dashed border-gray-300 bg-white p-12">
-              <h1 class="text-2xl font-semibold text-gray-900">No guides yet</h1>
-              <p class="mt-3 text-sm text-gray-600">
-                Add a post in{" "}
-                <code class="rounded bg-gray-100 px-1.5 py-0.5">src/content/posts</code>.
-              </p>
-            </div>
-          )}
+    {featuredPrimary ? (
+      <FeaturedGuide post={featuredPrimary} taxonomy={taxonomy} />
+    ) : (
+      <div class="max-w-6xl mx-auto px-6 pb-10">
+        <div class="rounded-3xl border border-dashed border-gray-300 bg-white p-12">
+          <h1 class="text-2xl font-semibold text-gray-900">No guides yet</h1>
+          <p class="mt-3 text-sm text-gray-600">
+            Add a post in{" "}
+            <code class="rounded bg-gray-100 px-1.5 py-0.5">src/content/posts</code>.
+          </p>
         </div>
       </div>
-    </section>
+    )}
+  </section>
+
+  <div class="max-w-6xl mx-auto px-6 pt-0">
+
+    <!-- CATEGORIES (placecards) -->
+    {categoryItems.length ? (
+      <section class="mt-10">
+        <h2 class="text-lg font-semibold text-gray-900">Categories</h2>
+
+        <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {categoryItems.map((it) => (
+            <CategoryPlacecard
+              categoryKey={it.key}
+              label={it.label}
+              href={it.href}
+              count={it.count}
+            />
+          ))}
+        </div>
+      </section>
+    ) : null}
+
+    <!-- PREVIOUS POSTS (condensed) -->
+    {previousPosts.length ? (
+      <section class="mt-12">
+        <div class="flex items-baseline justify-between gap-6">
+          <h2 class="text-lg font-semibold text-gray-900">Previous posts</h2>
+          <a class="text-sm font-semibold text-gray-900 hover:underline" href="/posts">
+            View all
+          </a>
+        </div>
+
+        <div class="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
+          {previousPosts.map((post) => (
+            <PreviousPostTile post={post} />
+          ))}
+        </div>
+      </section>
+    ) : null}
   </div>
 </SiteLayout>

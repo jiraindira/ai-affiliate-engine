@@ -77,27 +77,29 @@ const BRAND_ICON_SRC = "/brand/logo-icon.png";
     <a class="skip-link" href="#main">Skip to content</a>
 
     <header class="site-header">
-      <div class="site-container header-row">
-        <a href="/" class="brand" aria-label={`${taxonomy.brand.name} home`}>
-          <span class="brand-mark" aria-hidden="true">
-            <img
-              src={BRAND_ICON_SRC}
-              alt=""
-              class="brand-icon-img"
-              loading="eager"
-              decoding="async"
-            />
-          </span>
+      <div class="site-header-bar">
+        <div class="site-container header-row">
+          <a href="/" class="brand" aria-label={`${taxonomy.brand.name} home`}>
+            <span class="brand-mark" aria-hidden="true">
+              <img
+                src={BRAND_ICON_SRC}
+                alt=""
+                class="brand-icon-img"
+                loading="eager"
+                decoding="async"
+              />
+            </span>
 
-          <span class="brand-text">
-            <span class="brand-name">{taxonomy.brand.name}</span>
-            <span class="brand-tagline">{taxonomy.brand.tagline}</span>
-          </span>
-        </a>
+            <span class="brand-text">
+              <span class="brand-name">{taxonomy.brand.name}</span>
+              <span class="brand-tagline">{taxonomy.brand.tagline}</span>
+            </span>
+          </a>
 
-        <nav class="site-nav" aria-label="Primary">
-          <a href="/posts" class="nav-link">Guides</a>
-        </nav>
+          <nav class="site-nav" aria-label="Primary">
+            <a href="/posts" class="nav-link">Guides</a>
+          </nav>
+        </div>
       </div>
 
       <div class="site-disclosure" role="note" aria-label="Affiliate disclosure">
@@ -337,6 +339,10 @@ const BRAND_ICON_SRC = "/brand/logo-icon.png";
 
 <style>
   .site-header {
+    background: transparent;
+  }
+
+  .site-header-bar {
     position: sticky;
     top: 0;
     z-index: 20;
@@ -445,28 +451,28 @@ const BRAND_ICON_SRC = "/brand/logo-icon.png";
   }
 
   .site-disclosure {
-    border-top: 1px solid rgba(17, 24, 39, 0.08);
-    border-bottom: 1px solid rgba(17, 24, 39, 0.08);
-    background: #f6f1e8;
+    border-top: 1px solid rgba(17, 24, 39, 0.10);
+    border-bottom: 1px solid rgba(17, 24, 39, 0.10);
+    background: #f9f9f9;
   }
 
   .disclosure-row {
-    padding: 10px 24px;
+    padding: 8px 24px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
   .disclosure-text {
-    font-size: 12.5px;
+    font-size: 11.75px;
     line-height: 1.35;
-    color: rgba(17, 24, 39, 0.80);
-    text-align: center;
-    font-weight: 700;
+    color: rgba(17, 24, 39, 0.62);
+    text-align: left;
+    font-weight: 400;
   }
 
   .site-main {
-    padding: 10px 0 0;
+    padding: 0;
     background:
       radial-gradient(1200px 600px at 20% -10%, rgba(37, 99, 235, 0.08), transparent 60%),
       radial-gradient(900px 500px at 90% 0%, rgba(17, 24, 39, 0.05), transparent 55%),

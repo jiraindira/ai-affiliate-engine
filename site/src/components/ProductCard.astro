@@ -39,6 +39,71 @@ const hasBodyHtml = typeof bodyHtml === "string" && bodyHtml.trim().length > 0;
  * Our precedence is: bodyHtml (author markdown) > description (frontmatter) > nothing.
  */
 const hasDesc = typeof description === "string" && description.trim().length > 0;
+
+function normalizeText(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function stripHtmlTags(s) {
+  return String(s || "")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function decodeBasicEntities(s) {
+  return String(s || "")
+    .replaceAll("&nbsp;", " ")
+    .replaceAll("&amp;", "&")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .trim();
+}
+
+function stripRedundantLeadingTitleBlock(html, titleText) {
+  const raw = String(html || "").trim();
+  if (!raw) return "";
+
+  // Look for a leading single block that often repeats the product name.
+  const m = raw.match(/^\s*<(p|h3|h4)\b[^>]*>([\s\S]*?)<\/\1>\s*/i);
+  if (!m) return raw;
+
+  const inner = m[2] ?? "";
+  const firstText = normalizeText(decodeBasicEntities(stripHtmlTags(inner)));
+  const tNorm = normalizeText(titleText);
+
+  const isRedundant =
+    firstText.length > 0 &&
+    tNorm.length > 0 &&
+    (firstText === tNorm ||
+      (firstText.length >= 6 && tNorm.includes(firstText)) ||
+      (tNorm.length >= 6 && firstText.includes(tNorm)));
+
+  return isRedundant ? raw.slice(m[0].length).trim() : raw;
+}
+
+const titleNorm = normalizeText(title);
+const descNorm = normalizeText(description);
+const isRedundantDesc =
+  !hasDesc ||
+  descNorm.length === 0 ||
+  descNorm === titleNorm ||
+  (descNorm.length >= 6 && titleNorm.includes(descNorm)) ||
+  (titleNorm.length >= 6 && descNorm.includes(titleNorm)) ||
+  descNorm.length < 12;
+
+const showDesc = hasDesc && !isRedundantDesc;
+
+const cleanedBodyHtml = hasBodyHtml
+  ? stripRedundantLeadingTitleBlock(bodyHtml, title)
+  : "";
 ---
 
 <article class="pick">
@@ -76,8 +141,8 @@ const hasDesc = typeof description === "string" && description.trim().length > 0
   <div class="content-row">
     <div class="desc-wrap">
       {hasBodyHtml ? (
-        <div class="pick-prose" set:html={bodyHtml} />
-      ) : hasDesc ? (
+        <div class="pick-prose" set:html={cleanedBodyHtml} />
+      ) : showDesc ? (
         <p class="desc">{description}</p>
       ) : null}
     </div>
@@ -103,11 +168,11 @@ const hasDesc = typeof description === "string" && description.trim().length > 0
 
 <style>
   .pick {
-    padding: 12px 0 14px; /* ✅ tighter vertical rhythm between picks */
+    padding: 8px 0 10px; /* ✅ tighter vertical rhythm between picks */
   }
 
   .pick-rating {
-    margin-top: 4px; /* ✅ slightly tighter */
+    margin-top: 2px; /* ✅ slightly tighter */
     font-size: 14px;
     color: rgba(55, 65, 81, 0.85);
     display: flex;
@@ -148,7 +213,7 @@ const hasDesc = typeof description === "string" && description.trim().length > 0
   }
 
   .content-row {
-    margin-top: 10px; /* ✅ tighter */
+    margin-top: 8px; /* ✅ tighter */
     display: flex;
     align-items: flex-start;
     gap: 18px; /* ✅ slightly tighter */
@@ -186,7 +251,7 @@ const hasDesc = typeof description === "string" && description.trim().length > 0
   }
 
   .pick-prose :global(p) {
-    margin: 0 0 8px; /* ✅ reduced paragraph spacing (biggest win) */
+    margin: 0 0 6px; /* ✅ reduced paragraph spacing (biggest win) */
     font-size: 18px;
     line-height: 1.8;
     color: rgba(17, 24, 39, 0.88);

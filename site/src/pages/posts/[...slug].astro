@@ -244,7 +244,7 @@ function normalizeHowChosenToBullets(sectionMd) {
   const lines = sectionMd.split("\n");
   if (!lines.length) return sectionMd;
 
-  // First line should be the H2
+  // First line is usually the H2. We'll render the heading in the accordion summary instead.
   const headingLine = lines[0];
   const rest = lines.slice(1).join("\n").trim();
 
@@ -270,7 +270,33 @@ function normalizeHowChosenToBullets(sectionMd) {
     return `- ${flat}`;
   });
 
-  return `${headingLine}\n\n${intro}\n\n${items.join("\n")}`.trim();
+  // Drop the H2 to avoid duplicating the summary label.
+  // If the first line wasn't an H2 for some reason, keep it.
+  const hasH2 = /^\s*##\s+/.test(String(headingLine || ""));
+  const out = `${intro}\n\n${items.join("\n")}`.trim();
+  return hasH2 ? out : `${headingLine}\n\n${out}`.trim();
+}
+
+/**
+ * Remove a leading "## Intro" heading from markdown so the page can render
+ * the intro text without the literal "Intro" label.
+ */
+function stripLeadingIntroHeading(md) {
+  const lines = String(md || "").split("\n");
+  if (!lines.length) return "";
+
+  // Skip leading blanks
+  let i = 0;
+  while (i < lines.length && lines[i].trim() === "") i++;
+
+  // If the first non-empty line is "## Intro", drop it and following blank line(s)
+  if (/^##\s+intro\s*$/i.test(lines[i] ?? "")) {
+    i++;
+    while (i < lines.length && lines[i].trim() === "") i++;
+    return lines.slice(i).join("\n").trim();
+  }
+
+  return String(md || "").trim();
 }
 
 // Extract per-pick markdown blocks from the picks section using the contract:
@@ -350,8 +376,10 @@ const { pre: prePicksMarkdown, picksSection } = splitBeforePicks(rawBody);
 const { beforeHow, howSection, afterHow } = splitHowChosenSection(prePicksMarkdown);
 const howSectionNormalized = normalizeHowChosenToBullets(howSection);
 
+const introMarkdown = stripLeadingIntroHeading(beforeHow);
+
 // Markdown -> HTML (server-side)
-const beforeHowHtml = beforeHow ? marked.parse(beforeHow) : "";
+const introHtml = introMarkdown ? marked.parse(introMarkdown) : "";
 const howHtml = howSectionNormalized ? marked.parse(howSectionNormalized) : "";
 const afterHowHtml = afterHow ? marked.parse(afterHow) : "";
 
@@ -403,29 +431,20 @@ if (Array.isArray(picks) && picks.length > 0) {
     imageCreditUrl={post.data.imageCreditUrl}
     readingTime={null}
     toc={[]}
+    introHtml={introHtml}
   >
-    <!-- Intro (before How section) -->
-    {beforeHowHtml ? <div class="prose" set:html={beforeHowHtml} /> : null}
-
-    <!-- ✅ How chosen callout -->
+    <!-- ✅ How chosen accordion (closed by default) -->
     {howHtml ? (
-      <section class="how-box" aria-label="How this list was chosen">
-        <div class="how-prose prose" set:html={howHtml} />
-      </section>
+      <details class="how-accordion">
+        <summary class="how-summary">How this list was chosen</summary>
+        <div class="how-body">
+          <div class="how-prose prose" set:html={howHtml} />
+        </div>
+      </details>
     ) : null}
 
     <!-- Any other sections after How (still before picks) -->
     {afterHowHtml ? <div class="prose" set:html={afterHowHtml} /> : null}
-
-    <!-- ✅ Affiliate disclosure near CTAs (before first pick link) -->
-    <aside class="affiliate-box" aria-label="Affiliate disclosure">
-      <div class="affiliate-title">Affiliate disclosure</div>
-      <div class="affiliate-body">
-        Some links may be affiliate links. If you buy through them, we may earn a
-        commission at no extra cost to you.
-        <a class="affiliate-link" href="#affiliate-disclosure">Learn more</a>
-      </div>
-    </aside>
 
     <!-- Picks -->
     <section class="picks" aria-label="The picks">
@@ -437,7 +456,7 @@ if (Array.isArray(picks) && picks.length > 0) {
         const bodyHtml = mdToHtml(bodyMd);
 
         return (
-          <div class="pick">
+          <section class="pick-block">
             <h3 id={slugifyHeading(p.title)}>{p.title}</h3>
 
             <div class="pick-card-wrap">
@@ -450,7 +469,7 @@ if (Array.isArray(picks) && picks.length > 0) {
                 bodyHtml={bodyHtml}
               />
             </div>
-          </div>
+          </section>
         );
       })}
     </section>
@@ -508,6 +527,12 @@ if (Array.isArray(picks) && picks.length > 0) {
 
       <style>
         .side-stack { display: grid; gap: 12px; }
+
+        @media (max-width: 1023px) {
+          .side-stack {
+            display: none;
+          }
+        }
 
         .sidecard-lite {
           background: rgba(255, 255, 255, 0.95);
@@ -588,18 +613,18 @@ if (Array.isArray(picks) && picks.length > 0) {
         max-width: 72ch;
       }
 
-      .pick {
-        margin-top: 22px;
+      .pick-block {
+        margin-top: 18px;
       }
 
       .pick-card-wrap {
-        margin: 10px 0 14px;
+        margin: 8px 0 10px;
         max-width: 72ch;
       }
 
       .picks > h2 {
-        margin-top: 40px;
-        margin-bottom: 20px;
+        margin-top: 34px;
+        margin-bottom: 14px;
         font-size: 26px;
         font-weight: 800;
         letter-spacing: -0.02em;
@@ -607,7 +632,7 @@ if (Array.isArray(picks) && picks.length > 0) {
       }
 
       .picks h3 {
-        margin-top: 28px;
+        margin-top: 0;
         margin-bottom: 6px;
         font-size: 20px;
         font-weight: 750;
@@ -615,32 +640,59 @@ if (Array.isArray(picks) && picks.length > 0) {
         color: #111827;
       }
 
-      .pick + .pick {
-        margin-top: 28px;
-        padding-top: 24px;
+      .pick-block + .pick-block {
+        margin-top: 20px;
+        padding-top: 16px;
         border-top: 1px solid rgba(17, 24, 39, 0.08);
       }
 
       /* -----------------------------
          How chosen callout styling
          ----------------------------- */
-      .how-box {
+      .how-accordion {
         max-width: 72ch;
         margin: 18px 0 18px;
-        padding: 18px 18px 14px;
         border-radius: 16px;
         border: 1px solid rgba(17, 24, 39, 0.08);
         background: rgba(17, 24, 39, 0.03);
+        overflow: hidden;
       }
 
-      /* Make the H2 inside the box feel “section-ish” */
-      .how-prose :global(h2) {
-        margin: 0 0 10px;
-        font-size: 20px;
+      .how-summary {
+        cursor: pointer;
+        list-style: none;
+        padding: 14px 16px;
+        font-size: 14px;
         font-weight: 850;
         letter-spacing: -0.01em;
-        color: rgba(17, 24, 39, 0.95);
+        color: rgba(17, 24, 39, 0.92);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
       }
+
+      .how-summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .how-summary::after {
+        content: "+";
+        font-size: 18px;
+        line-height: 1;
+        opacity: 0.75;
+      }
+
+      details[open] > .how-summary::after {
+        content: "–";
+      }
+
+      .how-body {
+        padding: 0 16px 14px;
+      }
+
+      /* If an H2 slips through for any reason, don't show it (summary is the heading). */
+      .how-prose :global(h2) { display: none; }
 
       /* Bullet points: clear + roomy */
       .how-prose :global(ul) {
@@ -658,40 +710,6 @@ if (Array.isArray(picks) && picks.length > 0) {
 
       .how-prose :global(li::marker) {
         color: rgba(55, 65, 81, 0.75);
-      }
-
-      /* -----------------------------
-         Affiliate callout styling
-         ----------------------------- */
-      .affiliate-box {
-        max-width: none;
-        width: 100%;
-        margin: 18px 0 6px;
-        padding: 14px 16px;
-        border-radius: 16px;
-        border: 1px solid rgba(245, 158, 11, 0.28);
-        background: rgba(245, 158, 11, 0.08);
-        color: rgba(17, 24, 39, 0.9);
-        font-size: 13px;
-        line-height: 1.55;
-      }
-
-      .affiliate-title {
-        font-weight: 850;
-        letter-spacing: -0.01em;
-        margin-bottom: 4px;
-      }
-
-      .affiliate-link {
-        margin-left: 8px;
-        font-weight: 800;
-        color: rgb(29, 78, 216);
-        text-decoration: none;
-        white-space: nowrap;
-      }
-      .affiliate-link:hover {
-        text-decoration: underline;
-        text-underline-offset: 3px;
       }
 
       /* General prose defaults (so markdown renders nicely) */
