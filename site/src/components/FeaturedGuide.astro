@@ -46,13 +46,13 @@ const safeHeroAlt =
     : post?.data?.title ?? "";
 
 // Mobile-first hero: keep it punchy (shorter on small screens)
-const HERO_WRAP_CLASS = "relative w-full overflow-hidden bg-gray-50 aspect-video sm:aspect-video";
+const HERO_WRAP_CLASS = "relative w-full overflow-hidden aspect-video sm:aspect-video";
 const HERO_IMG_CLASS = "absolute inset-0 h-full w-full object-cover";
 ---
 
 <a
   href={`/posts/${post.slug}`}
-  class="group block w-screen mx-[calc(50%-50vw)] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+  class="group block w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
   aria-label={post.data.title}
 >
   <div class={HERO_WRAP_CLASS}>
@@ -74,14 +74,9 @@ const HERO_IMG_CLASS = "absolute inset-0 h-full w-full object-cover";
     <div class="absolute inset-x-0 bottom-0">
       <div class="h-28 bg-gradient-to-t from-black/70 via-black/35 to-transparent sm:h-32"></div>
       <div class="absolute inset-x-0 bottom-0 p-5 sm:p-7">
-        <div class="max-w-6xl mx-auto px-0 sm:px-6">
-          <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span class="inline-flex items-center rounded-full bg-white/14 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white ring-1 ring-inset ring-white/18">
-              Featured guide
-            </span>
-            <span class="text-xs font-semibold tracking-wide text-white/85">
-              {formatDate(post.data.publishedAt)}
-            </span>
+        <div class="max-w-6xl mx-auto px-6">
+          <div class="text-xs font-semibold tracking-wide text-white/85">
+            {formatDate(post.data.publishedAt)}
           </div>
           <h2 class="mt-2 text-2xl font-semibold leading-tight tracking-tight text-white sm:text-4xl">
             {post.data.title}

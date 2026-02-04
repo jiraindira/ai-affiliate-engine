@@ -1,6 +1,6 @@
 ---
 import SiteLayout from "../../layouts/SiteLayout.astro";
-import GuideCard from "../../components/GuideCard.astro";
+import PreviousPostTile from "../../components/PreviousPostTile.astro";
 import { getCollection } from "astro:content";
 import { getTaxonomy } from "../../lib/taxonomy";
 import { normalizePostCategories } from "../../lib/normalizeCategories";
@@ -105,16 +105,16 @@ const listJsonLd = buildCollectionPageJsonLd({
       </div>
 
       <a href="/posts" class="text-sm font-semibold text-blue-700 hover:text-blue-800">
-        View all →
+        View all
       </a>
     </div>
 
     <hr class="mt-6 border-t-2 border-gray-900/25" />
 
     {filtered.length ? (
-      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="mt-10 grid grid-cols-2 gap-3 sm:gap-4">
         {filtered.map((post) => (
-          <GuideCard post={post} taxonomy={taxonomy} />
+          <PreviousPostTile post={post} />
         ))}
       </div>
     ) : (
