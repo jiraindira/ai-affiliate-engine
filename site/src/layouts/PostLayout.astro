@@ -22,6 +22,9 @@ const {
   readingTime,
   toc = [],
   introHtml,
+  hideSidebar = false,
+  typeLabel,
+  dekVariant = "narrow",
 } = Astro.props;
 
 // Detect whether heroImage is a public URL (/images/...) or an asset path
@@ -134,6 +137,12 @@ const categoriesUnique = categoryIds.filter((c) => {
       )}
 
       <div class="post-meta">
+        {typeLabel ? (
+          <span class="post-type">
+            {typeLabel}
+          </span>
+        ) : null}
+
         <span class="post-date">{dateLabel}</span>
 
         {categoriesUnique.length > 0 ? <span class="post-dot">•</span> : null}
@@ -162,11 +171,11 @@ const categoriesUnique = categoryIds.filter((c) => {
       {introHtml ? (
         <div class="post-intro prose" set:html={introHtml} />
       ) : description ? (
-        <p class="post-desc">{description}</p>
+        <p class={`post-desc${dekVariant === "wide" ? " post-desc--wide" : ""}`}>{description}</p>
       ) : null}
     </header>
 
-    <div class="post-grid">
+    <div class={`post-grid${hideSidebar ? " post-grid--no-aside" : ""}`}>
     <main class="post-main">
       <div class="post-article">
         <div class="prose-premium">
@@ -176,37 +185,39 @@ const categoriesUnique = categoryIds.filter((c) => {
       </div>
     </main>
 
-    <aside class="post-aside">
-      <slot name="sidebar">
-        <div class="sidecard">
-          <div class="sidehead">On this page</div>
+    {!hideSidebar ? (
+      <aside class="post-aside">
+        <slot name="sidebar">
+          <div class="sidecard">
+            <div class="sidehead">On this page</div>
 
-          {showToc ? (
-            <nav class="toc">
-              <ol class="toc-list">
-                {toc.map((item) => (
-                  <li class="toc-item">
-                    <a class="toc-link" href={`#${item.id}`}>
-                      {item.text}
-                    </a>
-                  </li>
-                ))}
-              </ol>
-            </nav>
-          ) : (
-            <p class="toc-empty">No table of contents is available for this page.</p>
-          )}
+            {showToc ? (
+              <nav class="toc">
+                <ol class="toc-list">
+                  {toc.map((item) => (
+                    <li class="toc-item">
+                      <a class="toc-link" href={`#${item.id}`}>
+                        {item.text}
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            ) : (
+              <p class="toc-empty">No table of contents is available for this page.</p>
+            )}
 
-          <div class="side-actions">
-            <a href="#the-picks" class="side-btn">Jump to picks</a>
-            <p class="side-tip">
-              Tip: skim the picks first, then circle back to “How this list was chosen”
-              if you want the logic behind the list.
-            </p>
+            <div class="side-actions">
+              <a href="#the-picks" class="side-btn">Jump to picks</a>
+              <p class="side-tip">
+                Tip: skim the picks first, then circle back to “How this list was chosen”
+                if you want the logic behind the list.
+              </p>
+            </div>
           </div>
-        </div>
-      </slot>
-    </aside>
+        </slot>
+      </aside>
+    ) : null}
     </div>
   </div>
 </section>
@@ -234,6 +245,19 @@ const categoriesUnique = categoryIds.filter((c) => {
     flex-wrap: wrap;
     gap: 8px;
     align-items: center;
+  }
+
+  .post-type {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(17, 24, 39, 0.06);
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    color: rgba(17, 24, 39, 0.82);
+    font-weight: 750;
+    letter-spacing: -0.01em;
+    line-height: 1;
   }
 
   .post-dot {
@@ -276,12 +300,20 @@ const categoriesUnique = categoryIds.filter((c) => {
     margin-top: 12px;
     font-size: 17px;
     line-height: 1.55;
-    max-width: 70ch;
+    max-width: none;
+  }
+
+  .post-desc--wide {
+    max-width: none;
+    font-size: 19px;
+    line-height: 1.6;
+    color: rgba(17, 24, 39, 0.78);
+    letter-spacing: -0.01em;
   }
 
   .post-intro {
     margin-top: 12px;
-    max-width: 72ch;
+    max-width: none;
     font-size: 17px;
     line-height: 1.65;
     color: rgba(17, 24, 39, 0.78);
@@ -307,9 +339,17 @@ const categoriesUnique = categoryIds.filter((c) => {
     gap: 18px;
   }
 
+  .post-grid--no-aside {
+    grid-template-columns: 1fr;
+  }
+
   @media (min-width: 1024px) {
     .post-grid {
       grid-template-columns: minmax(0, 1fr) 340px;
+    }
+
+    .post-grid--no-aside {
+      grid-template-columns: 1fr;
     }
   }
 

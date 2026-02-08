@@ -23,10 +23,12 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 
-// Ensure Astro still processes the markdown entry normally (content collections)
-await post.render();
+// Ensure Astro processes the markdown entry (content collections)
+const { Content } = await post.render();
 
 const { products = [], publishedAt, category, picks = [] } = post.data;
+const isGuide = Array.isArray(products) && products.length > 0;
+const typeLabel = isGuide ? "Buying guide" : "Thought piece";
 
 const taxonomy = await getTaxonomy();
 
@@ -110,6 +112,8 @@ const logoUrl = toAbsoluteUrl(baseUrl, "/brand/logo-icon.png");
 const canonical = `/posts/${post.slug}`;
 const ogImage = post.data.heroImage;
 
+const postsCrumbLabel = isGuide ? "Guides" : "Articles";
+
 const canonicalUrl = toAbsoluteUrl(baseUrl, canonical);
 const ogImageUrl = ogImage ? toAbsoluteUrl(baseUrl, ogImage) : undefined;
 
@@ -120,7 +124,7 @@ const datePublishedIso =
 
 const breadcrumbItems = [
   { name: siteName, url: siteUrl },
-  { name: "Guides", url: toAbsoluteUrl(baseUrl, "/posts") },
+  { name: postsCrumbLabel, url: toAbsoluteUrl(baseUrl, "/posts") },
   ...(category
     ? [
         {
@@ -159,6 +163,14 @@ const seoDescription = (() => {
 
 // Patch JSON-LD description with the final chosen value.
 articleJsonLd.description = seoDescription || undefined;
+
+const uiDescription = isGuide
+  ? seoDescription
+  : (post?.data?.dek
+      ? String(post.data.dek)
+      : post?.data?.description
+        ? String(post.data.description)
+        : "");
 
 // -----------------------------
 // Deterministic parsing helpers
@@ -421,7 +433,7 @@ if (Array.isArray(picks) && picks.length > 0) {
 
   <PostLayout
     title={post.data.title}
-    description={seoDescription}
+    description={uiDescription}
     publishedAt={publishedAt}
     category={category}
     audience={post.data.audience}
@@ -431,48 +443,181 @@ if (Array.isArray(picks) && picks.length > 0) {
     imageCreditUrl={post.data.imageCreditUrl}
     readingTime={null}
     toc={[]}
-    introHtml={introHtml}
+    introHtml={isGuide ? introHtml : ""}
+    hideSidebar={!isGuide}
+    typeLabel={typeLabel}
+    dekVariant={isGuide ? "narrow" : "wide"}
   >
-    <!-- ✅ How chosen accordion (closed by default) -->
-    {howHtml ? (
-      <details class="how-accordion">
-        <summary class="how-summary">How this list was chosen</summary>
-        <div class="how-body">
-          <div class="how-prose prose" set:html={howHtml} />
-        </div>
-      </details>
-    ) : null}
-
-    <!-- Any other sections after How (still before picks) -->
-    {afterHowHtml ? <div class="prose" set:html={afterHowHtml} /> : null}
-
-    <!-- Picks -->
-    <section class="picks" aria-label="The picks">
-      <h2 id="the-picks">The picks</h2>
-
-      {products.map((p) => {
-        const pickId = p.pick_id;
-        const bodyMd = pickBodyById.get(pickId) ?? "";
-        const bodyHtml = mdToHtml(bodyMd);
-
-        return (
-          <section class="pick-block">
-            <h3 id={slugifyHeading(p.title)}>{p.title}</h3>
-
-            <div class="pick-card-wrap">
-              <ProductCard
-                title={p.title}
-                rating={p.rating}
-                reviews_count={p.reviews_count}
-                url={p.url}
-                description={p.description}
-                bodyHtml={bodyHtml}
-              />
+    {isGuide ? (
+      <Fragment>
+        <!-- ✅ How chosen accordion (closed by default) -->
+        {howHtml ? (
+          <details class="how-accordion">
+            <summary class="how-summary">How this list was chosen</summary>
+            <div class="how-body">
+              <div class="how-prose prose" set:html={howHtml} />
             </div>
-          </section>
-        );
-      })}
-    </section>
+          </details>
+        ) : null}
+
+        <!-- Any other sections after How (still before picks) -->
+        {afterHowHtml ? <div class="prose" set:html={afterHowHtml} /> : null}
+
+        <!-- Picks -->
+        <section class="picks" aria-label="The picks">
+          <h2 id="the-picks">The picks</h2>
+
+          {products.map((p) => {
+            const pickId = p.pick_id;
+            const bodyMd = pickBodyById.get(pickId) ?? "";
+            const bodyHtml = mdToHtml(bodyMd);
+
+            return (
+              <section class="pick-block">
+                <h3 id={slugifyHeading(p.title)}>{p.title}</h3>
+
+                <div class="pick-card-wrap">
+                  <ProductCard
+                    title={p.title}
+                    rating={p.rating}
+                    reviews_count={p.reviews_count}
+                    url={p.url}
+                    description={p.description}
+                    bodyHtml={bodyHtml}
+                  />
+                </div>
+              </section>
+            );
+          })}
+        </section>
+      </Fragment>
+    ) : (
+      <div class="prose">
+        <Content />
+      </div>
+    )}
+
+    <div slot="sidebar">
+      {isGuide ? (
+        <Fragment>
+          <div class="side-stack">
+            <div class="sidecard-lite">
+              <div class="side-title">Quick picks</div>
+
+              <ol class="quick-list" aria-label="Quick picks list">
+                {products.map((p, idx) => {
+                  const id = slugifyHeading(p.title);
+                  return (
+                    <li class="quick-item">
+                      <a href={id ? `#${id}` : "#the-picks"} class="quick-link" title={p.title}>
+                        <span class="quick-num">{idx + 1}.</span>
+                        <span class="quick-title">{p.title}</span>
+                      </a>
+
+                      {(typeof p.rating === "number" || typeof p.reviews_count === "number") && (
+                        <div class="quick-meta">
+                          {typeof p.rating === "number" ? <span>{p.rating.toFixed(1)}★</span> : null}
+                          {typeof p.reviews_count === "number" ? (
+                            <span>
+                              {typeof p.rating === "number" ? " · " : ""}
+                              {p.reviews_count.toLocaleString()} reviews
+                            </span>
+                          ) : null}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+
+              <a href="#the-picks" class="jump-link">Jump to picks section →</a>
+            </div>
+          </div>
+
+          <style>
+            .side-stack { display: grid; gap: 12px; }
+
+            @media (max-width: 1023px) {
+              .side-stack {
+                display: none;
+              }
+            }
+
+            .sidecard-lite {
+              background: rgba(255, 255, 255, 0.95);
+              border: 1px solid rgba(17, 24, 39, 0.08);
+              border-radius: 18px;
+              padding: 16px;
+            }
+
+            .side-title {
+              font-size: 13px;
+              font-weight: 800;
+              color: rgba(17, 24, 39, 0.9);
+              letter-spacing: -0.01em;
+            }
+
+            .quick-list {
+              margin: 12px 0 0;
+              padding: 0;
+              list-style: none;
+              display: grid;
+              gap: 10px;
+              font-size: 13px;
+              max-height: 360px;
+              overflow: auto;
+              padding-right: 6px;
+              scrollbar-gutter: stable;
+            }
+
+            .quick-item {
+              padding: 10px 10px;
+              border-radius: 14px;
+              border: 1px solid rgba(17, 24, 39, 0.06);
+              background: rgba(17, 24, 39, 0.02);
+            }
+
+            .quick-link {
+              text-decoration: none;
+              color: rgba(17, 24, 39, 0.88);
+              font-weight: 700;
+              line-height: 1.25;
+              display: grid;
+              grid-template-columns: auto 1fr;
+              gap: 6px;
+              align-items: baseline;
+            }
+
+            .quick-link:hover {
+              color: rgb(37, 99, 235);
+              text-decoration: underline;
+              text-underline-offset: 3px;
+            }
+
+            .quick-num { color: rgba(55, 65, 81, 0.65); font-weight: 800; }
+
+            .quick-title {
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            }
+
+            .quick-meta { margin-top: 6px; color: rgba(55, 65, 81, 0.7); font-size: 12px; }
+
+            .jump-link {
+              display: inline-block;
+              margin-top: 12px;
+              font-size: 13px;
+              font-weight: 750;
+              color: rgb(37, 99, 235);
+              text-decoration: none;
+            }
+            .jump-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+          </style>
+        </Fragment>
+      ) : null}
+    </div>
 
     {moreGuides.length ? (
       <nav class="np" aria-label="More guides">
@@ -489,124 +634,6 @@ if (Array.isArray(picks) && picks.length > 0) {
         </div>
       </nav>
     ) : null}
-
-    <Fragment slot="sidebar">
-      <div class="side-stack">
-        <div class="sidecard-lite">
-          <div class="side-title">Quick picks</div>
-
-          <ol class="quick-list" aria-label="Quick picks list">
-            {products.map((p, idx) => {
-              const id = slugifyHeading(p.title);
-              return (
-                <li class="quick-item">
-                  <a href={id ? `#${id}` : "#the-picks"} class="quick-link" title={p.title}>
-                    <span class="quick-num">{idx + 1}.</span>
-                    <span class="quick-title">{p.title}</span>
-                  </a>
-
-                  {(typeof p.rating === "number" || typeof p.reviews_count === "number") && (
-                    <div class="quick-meta">
-                      {typeof p.rating === "number" ? <span>{p.rating.toFixed(1)}★</span> : null}
-                      {typeof p.reviews_count === "number" ? (
-                        <span>
-                          {typeof p.rating === "number" ? " · " : ""}
-                          {p.reviews_count.toLocaleString()} reviews
-                        </span>
-                      ) : null}
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-
-          <a href="#the-picks" class="jump-link">Jump to picks section →</a>
-        </div>
-      </div>
-
-      <style>
-        .side-stack { display: grid; gap: 12px; }
-
-        @media (max-width: 1023px) {
-          .side-stack {
-            display: none;
-          }
-        }
-
-        .sidecard-lite {
-          background: rgba(255, 255, 255, 0.95);
-          border: 1px solid rgba(17, 24, 39, 0.08);
-          border-radius: 18px;
-          padding: 16px;
-        }
-
-        .side-title {
-          font-size: 13px;
-          font-weight: 800;
-          color: rgba(17, 24, 39, 0.9);
-          letter-spacing: -0.01em;
-        }
-
-        .quick-list {
-          margin: 12px 0 0;
-          padding: 0;
-          list-style: none;
-          display: grid;
-          gap: 10px;
-          font-size: 13px;
-          max-height: 360px;
-          overflow: auto;
-          padding-right: 6px;
-          scrollbar-gutter: stable;
-        }
-
-        .quick-item {
-          padding: 10px 10px;
-          border-radius: 14px;
-          border: 1px solid rgba(17, 24, 39, 0.06);
-          background: rgba(17, 24, 39, 0.02);
-        }
-
-        .quick-link {
-          text-decoration: none;
-          color: rgba(17, 24, 39, 0.88);
-          font-weight: 700;
-          line-height: 1.25;
-          display: grid;
-          grid-template-columns: auto 1fr;
-          gap: 6px;
-          align-items: baseline;
-        }
-
-        .quick-link:hover {
-          color: rgb(37, 99, 235);
-          text-decoration: underline;
-          text-underline-offset: 3px;
-        }
-
-        .quick-num { color: rgba(55, 65, 81, 0.65); font-weight: 800; }
-
-        .quick-title {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        .quick-meta { margin-top: 6px; color: rgba(55, 65, 81, 0.7); font-size: 12px; }
-
-        .jump-link {
-          display: inline-block;
-          margin-top: 12px;
-          font-size: 13px;
-          font-weight: 750;
-          color: rgb(37, 99, 235);
-          text-decoration: none;
-        }
-        .jump-link:hover { text-decoration: underline; text-underline-offset: 3px; }
-      </style>
-    </Fragment>
 
     <style>
       .picks {

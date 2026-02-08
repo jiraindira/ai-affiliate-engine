@@ -1,10 +1,10 @@
 ---
 heroImage: "/images/posts/2026-02-01-dehumidified-not-just-dry-protecting-your-home-from/hero.webp"
-heroAlt: "Dehumidified, Not Just Dry: Protecting Your Home From hero image"
+heroAlt: "Illustration of a dehumidifier and humidity meter (hygrometer) in a UK home"
 heroImageHome: "/images/posts/2026-02-01-dehumidified-not-just-dry-protecting-your-home-from/hero_home.webp"
 heroImageCard: "/images/posts/2026-02-01-dehumidified-not-just-dry-protecting-your-home-from/hero_card.webp"
 heroImageSource: "/images/posts/2026-02-01-dehumidified-not-just-dry-protecting-your-home-from/hero_source.webp"
-title: "Dehumidified, Not Just Dry: Protecting Your Home From Mold"
+title: "Dehumidified, Not Just Dry: Protecting Your Home From Mould"
 description: 'In the UK, “a bit damp” has a way of becoming a lifestyle: steamed-up windows, musty corners, and that one cupboard that smells like it’s holding a grudge.'
 publishedAt: "2026-02-01T22:35:11Z"
 categories: ["home"]

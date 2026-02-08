@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "validate": "node ./scripts/validate_content.mjs",
+    "test": "node --test",
     "validate:fix": "node ./scripts/validate_content.mjs --fix"
   },
   "dependencies": {

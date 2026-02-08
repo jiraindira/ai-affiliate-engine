@@ -55,9 +55,11 @@ const navItems = [
     .filter((it) => (typeof it.count === "number" ? it.count > 0 : true)),
 ];
 
-const featuredPrimary = posts[0];
+const featuredPrimary = posts.find((p) => Boolean((p.data as any)?.featured)) ?? posts[0];
 const categoryItems = navItems.filter((it) => it.key !== "all");
-const previousPosts = posts.slice(1, 13);
+const previousPosts = featuredPrimary
+  ? posts.filter((p) => p.slug !== featuredPrimary.slug).slice(0, 12)
+  : posts.slice(0, 12);
 
 // Homepage copy comes from taxonomy (agent-owned), with safe fallbacks
 const hp = taxonomy.homepage ?? {

@@ -1,81 +1,89 @@
 {
-  "category": "home",
-  "subcategory": "Dehumidifier",
+  "category": "kids",
+  "subcategory": "gift",
   "audience": "UK shoppers",
-  "seed_title": "Dehumidified, Not Just Dry: Protecting Your Home From Mould and Damp",
-  "seed_description": "long rainy season doesn’t stop at wet coats. It creeps into walls, windows, and air, turning homes damp and encouraging mould that’s especially tough on children’s health. A dehumidified home isn’t about comfort, it’s about breaking the cycle before moisture becomes a problem",
+  "seed_title": "Gifts for 4 Year Olds: Top 10 Birthday Gift Ideas",
+  "seed_description": "shopping for birthday gifts for a 4 year old can be a challenge, but with the right guidance, you can find the perfect present that will delight and engage them. Here are some top gift ideas for 4 year olds that are sure to bring joy and excitement to their special day.",
   "source_url": "https://www.amazon.co.uk/s?k=rainware&crid=1K6ZAKXWPXO3C&sprefix=rainwate%2Caps%2C134&ref=nb_sb_noss_2",
   "products": [
     {
-      "name": "Pro Breeze® 12L/Day Dehumidifier with Automatic Humidity Sensor & Display",
-      "url": "https://amzn.to/4qRcNVA",
-      "rating": 4.6,
-      "reviews_count": 10801,
-      "price": "£99.99",
+      "name": "Dreamon Take Apart Dinosaur Toys for Kids",
+      "url": "https://amzn.to/4qZjCEG",
+      "rating": 4.4,
+      "reviews_count": 10438,
+      "price": "£16",
       "status": "ok"
     },
     {
-      "name": "Pro Breeze® 20L/Day Dehumidifier with Digital Humidity Display",
-      "url": "https://amzn.to/4rt2vLn",
-      "rating": 4.6,
-      "reviews_count": 10801,
-      "price": "£139.99",
-      "status": "ok"
-    },
-    {
-      "name": "Max 25L/d Dehumidifier for Home",
-      "url": "https://amzn.to/4tdCS2G",
-      "rating": 4.6,
-      "reviews_count": 4538,
-      "price": "£119",
-      "status": "ok"
-    },
-    {
-      "name": "Hillington Dehumidifier Bag Reusable - 2-Pack Moisture Absorbers",
-      "url": "https://amzn.to/4kcq9JH",
-      "rating": 4.2,
-      "reviews_count": 8798,
-      "price": "£19.99",
-      "status": "ok"
-    },
-    {
-      "name": "ANSIO Dehumidifier Disposable Pack of 10 Room Moisture Absorber",
-      "url": "https://amzn.to/4t9Oq7e",
-      "rating": 4.3,
-      "reviews_count": 48847,
-      "price": "£9.93",
-      "status": "ok"
-    },
-    {
-      "name": "ThermoPro TP50 Digital Thermo-Hygrometer",
-      "url": "https://amzn.to/4ruzsqY",
+      "name": "ORSEN LCD Writing Tablet - Dinosaur Drawing Pad for Kids",
+      "url": "https://amzn.to/4axs8oB",
       "rating": 4.5,
-      "reviews_count": 136134,
-      "price": "£7.99",
-      "status": "ok"
-    },
-    {
-      "name": "NOKLEAD Hygrometer Indoor Thermometer",
-      "url": "https://amzn.to/3ZfgfNN",
-      "rating": 4.5,
-      "reviews_count": 35518,
+      "reviews_count": 17043,
       "price": "£12.99",
       "status": "ok"
     },
     {
-      "name": "Mould Stain Remover Gel Cleaner - ACTIVE Heavy Duty Stain Cleaner",
-      "url": "https://amzn.to/4riTAw2",
-      "rating": 4.2,
-      "reviews_count": 21267,
-      "price": "£11.01",
+      "name": "SHAWE 3D Take Apart Toy – Creative Construction Toys Kit",
+      "url": "https://amzn.to/3Oqqc8J",
+      "rating": 4.5,
+      "reviews_count": 1855,
+      "price": "£14.99",
       "status": "ok"
     },
     {
-      "name": "HG Mould Spray - Effective Black Mould & Mildew Cleaner",
-      "url": "https://amzn.to/4tdORgL",
+      "name": "Lehoo - Montessori Educational Construction Toy",
+      "url": "https://amzn.to/3Mse1I0",
+      "rating": 4.5,
+      "reviews_count": 285,
+      "price": "£22.99",
+      "status": "ok"
+    },
+    {
+      "name": "MAGNA-TILES Classic 32-Piece Magnetic Construction Set",
+      "url": "https://amzn.to/4tkyI9p",
+      "rating": 4.7,
+      "reviews_count": 13078,
+      "price": "£34.99",
+      "status": "ok"
+    },
+    {
+      "name": "Kids Dart Board Set,Double Sided Dart Board with 12 Sticky Balls,6 Darts",
+      "url": "https://amzn.to/3ZhISdh",
+      "rating": 4.4,
+      "reviews_count": 1107,
+      "price": "£15.99",
+      "status": "ok"
+    },
+    {
+      "name": "Skillmatics Guess in 10 - Animal Kingdom, Card Game for Kids",
+      "url": "https://amzn.to/46ykaJq",
       "rating": 4.6,
-      "reviews_count": 42432,
-      "price": "£4.32",
+      "reviews_count": 33389,
+      "price": "£11.89",
+      "status": "ok"
+    },
+    {
+      "name": "Tiny Land Wooden Train Set for Toddler - 39 Piece- with Wooden Tracks Compatible with Major Brands",
+      "url": "https://amzn.to/3Mj20Vb",
+      "rating": 4.6,
+      "reviews_count": 2914,
+      "price": "£29.99",
+      "status": "ok"
+    },
+    {
+      "name": "Ravensburger Paw Patrol 4 in Box Jigsaw Puzzles - 12, 16, 20 & 24 Pieces",
+      "url": "https://amzn.to/4qkOT3S",
+      "rating": 4.7,
+      "reviews_count": 7098,
+      "price": "£5.25",
+      "status": "ok"
+    },
+    {
+      "name": "Outset Media Picture Charades for Kids",
+      "url": "https://amzn.to/4r3c6ZH",
+      "rating": 4.8,
+      "reviews_count": 1234,
+      "price": "£12.74",
       "status": "ok"
     }
   ]

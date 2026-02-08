@@ -46,13 +46,29 @@ const heroImageRaw = (() => {
       ? post.data.heroImage.trim()
       : null;
 
+  const hasExplicitHero = Boolean(heroCard || heroHome || hero);
+  if (!hasExplicitHero) return null;
+
   // Featured/top surfaces want the wider home crop; grid cards prefer the dedicated card crop.
-  if (variant === "top") return heroHome || hero || FALLBACK_HERO;
-  return heroCard || heroHome || hero || FALLBACK_HERO;
+  if (variant === "top") return heroHome || hero;
+  return heroCard || heroHome || hero;
 })();
 
-const isPublicHero = heroImageRaw.startsWith("/") || isAbsoluteUrl(heroImageRaw);
-const heroAsset = !isPublicHero ? getPostHeroImage(heroImageRaw) : null;
+const hasHero = typeof heroImageRaw === "string" && heroImageRaw.trim().length > 0;
+
+const isPublicHero = hasHero && (heroImageRaw!.startsWith("/") || isAbsoluteUrl(heroImageRaw!));
+const heroAsset = hasHero && !isPublicHero ? getPostHeroImage(heroImageRaw!) : null;
+
+const descriptionRaw =
+  typeof post?.data?.description === "string" && post.data.description.trim().length > 0
+    ? post.data.description.trim()
+    : "";
+
+const isGuide = Array.isArray((post?.data as any)?.products) && ((post?.data as any)?.products?.length ?? 0) > 0;
+const typeLabel = isGuide ? "Buying guide" : "Thought piece";
+const typePillClass = isGuide
+  ? "bg-blue-50 text-blue-800 ring-1 ring-inset ring-blue-100"
+  : "bg-purple-50 text-purple-800 ring-1 ring-inset ring-purple-100";
 
 const safeHeroAlt =
   typeof post?.data?.heroAlt === "string" && post.data.heroAlt.trim().length > 0
@@ -74,34 +90,38 @@ const HERO_IMG_CLASS = "absolute inset-0 h-full w-full object-cover";
 ---
 
 <a href={`/posts/${post.slug}`} class={WRAP_CLASS} aria-label={post.data.title}>
-  <div class={CARD_CLASS}>
-    <div class={HERO_WRAP_CLASS}>
-      {isPublicHero ? (
-        <img src={heroImageRaw} alt={safeHeroAlt} class={HERO_IMG_CLASS} loading={loading} decoding="async" />
-      ) : heroAsset ? (
-        <Image
-          src={heroAsset}
-          alt={safeHeroAlt}
-          width={heroAsset.width}
-          height={heroAsset.height}
-          class={HERO_IMG_CLASS}
-          sizes="(min-width: 1024px) 360px, 50vw"
-          loading={loading}
-          decoding="async"
-        />
-      ) : (
-        <img src={FALLBACK_HERO} alt={safeHeroAlt} class={HERO_IMG_CLASS} loading={loading} decoding="async" />
-      )}
+  <div class={CARD_CLASS + (!hasHero ? " bg-gray-50" : "")}>
+    {hasHero ? (
+      <div class={HERO_WRAP_CLASS}>
+        {isPublicHero ? (
+          <img src={heroImageRaw!} alt={safeHeroAlt} class={HERO_IMG_CLASS} loading={loading} decoding="async" />
+        ) : heroAsset ? (
+          <Image
+            src={heroAsset}
+            alt={safeHeroAlt}
+            width={heroAsset.width}
+            height={heroAsset.height}
+            class={HERO_IMG_CLASS}
+            sizes="(min-width: 1024px) 360px, 50vw"
+            loading={loading}
+            decoding="async"
+          />
+        ) : null}
+      </div>
+    ) : null}
 
-    </div>
-
-    <div class="p-4">
+    <div class={hasHero ? "p-4" : "p-5"}>
       <div class="flex flex-wrap items-center gap-2">
         {featured ? (
           <span class="inline-flex items-center rounded-full bg-gray-900 px-2.5 py-1 text-[11px] font-semibold text-white">
             Featured
           </span>
         ) : null}
+
+        <span class={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${typePillClass}`}>
+          {typeLabel}
+        </span>
+
         <span class="text-[11px] font-semibold tracking-wide text-gray-600">
           {formatDate(post.data.publishedAt)}
         </span>
@@ -109,6 +129,9 @@ const HERO_IMG_CLASS = "absolute inset-0 h-full w-full object-cover";
       <h3 class="mt-1 text-sm font-semibold leading-snug text-gray-900 line-clamp-2 group-hover:text-gray-950">
         {post.data.title}
       </h3>
+      {!hasHero && descriptionRaw ? (
+        <p class="mt-2 text-sm text-gray-600 line-clamp-3">{descriptionRaw}</p>
+      ) : null}
     </div>
   </div>
 </a>

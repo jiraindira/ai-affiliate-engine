@@ -13,6 +13,12 @@ const posts = defineCollection({
     title: z.string(),
     description: z.string(),
 
+    // Optional on-page dek (lead) separate from SEO description
+    dek: z.string().optional(),
+
+    // Optional explicit feature pinning (homepage)
+    featured: z.boolean().optional(),
+
     // Always coerce to Date so .getTime() is safe everywhere
     publishedAt: z.coerce.date(),
 

@@ -1,5 +1,6 @@
 ---
 // src/components/ProductCard.astro
+import { stripRedundantLeadingTitleBlock } from "../lib/pickBodySanitizer.mjs";
 const { title, rating, reviews_count, url, description, bodyHtml } = Astro.props;
 
 /**
@@ -45,48 +46,6 @@ function normalizeText(s) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
-}
-
-function stripHtmlTags(s) {
-  return String(s || "")
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function decodeBasicEntities(s) {
-  return String(s || "")
-    .replaceAll("&nbsp;", " ")
-    .replaceAll("&amp;", "&")
-    .replaceAll("&quot;", '"')
-    .replaceAll("&#39;", "'")
-    .replaceAll("&lt;", "<")
-    .replaceAll("&gt;", ">")
-    .trim();
-}
-
-function stripRedundantLeadingTitleBlock(html, titleText) {
-  const raw = String(html || "").trim();
-  if (!raw) return "";
-
-  // Look for a leading single block that often repeats the product name.
-  const m = raw.match(/^\s*<(p|h3|h4)\b[^>]*>([\s\S]*?)<\/\1>\s*/i);
-  if (!m) return raw;
-
-  const inner = m[2] ?? "";
-  const firstText = normalizeText(decodeBasicEntities(stripHtmlTags(inner)));
-  const tNorm = normalizeText(titleText);
-
-  const isRedundant =
-    firstText.length > 0 &&
-    tNorm.length > 0 &&
-    (firstText === tNorm ||
-      (firstText.length >= 6 && tNorm.includes(firstText)) ||
-      (tNorm.length >= 6 && firstText.includes(tNorm)));
-
-  return isRedundant ? raw.slice(m[0].length).trim() : raw;
 }
 
 const titleNorm = normalizeText(title);
