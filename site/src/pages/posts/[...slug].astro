@@ -185,6 +185,13 @@ function slugifyHeading(text) {
     .replace(/-+/g, "-");
 }
 
+function pickAnchorId(p) {
+  const base = slugifyHeading(p?.title);
+  const suffix = slugifyHeading(p?.pick_id);
+  if (base && suffix) return `${base}-${suffix}`;
+  return base || suffix || "";
+}
+
 // Find the "## The picks" section boundary
 function splitBeforePicks(md) {
   const lines = String(md || "").split("\n");
@@ -472,9 +479,11 @@ if (Array.isArray(picks) && picks.length > 0) {
             const bodyMd = pickBodyById.get(pickId) ?? "";
             const bodyHtml = mdToHtml(bodyMd);
 
+            const anchorId = pickAnchorId(p);
+
             return (
               <section class="pick-block">
-                <h3 id={slugifyHeading(p.title)}>{p.title}</h3>
+                <h3 id={anchorId}>{p.title}</h3>
 
                 <div class="pick-card-wrap">
                   <ProductCard
@@ -506,7 +515,7 @@ if (Array.isArray(picks) && picks.length > 0) {
 
               <ol class="quick-list" aria-label="Quick picks list">
                 {products.map((p, idx) => {
-                  const id = slugifyHeading(p.title);
+                  const id = pickAnchorId(p);
                   return (
                     <li class="quick-item">
                       <a href={id ? `#${id}` : "#the-picks"} class="quick-link" title={p.title}>

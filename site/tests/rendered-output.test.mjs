@@ -49,6 +49,36 @@ test("guide pages render Quick picks in the sidebar (not fallback TOC)", () => {
     !html.includes("On this page"),
     "Did not expect fallback TOC sidebar to render when Quick picks slot is provided"
   );
+
+  // Guard: Quick pick links should be unique and point at real IDs.
+  const start = html.indexOf('<ol class="quick-list"');
+  const end = start >= 0 ? html.indexOf("</ol>", start) : -1;
+  assert.ok(start >= 0 && end > start, "Expected Quick picks list markup to exist");
+
+  const quickListHtml = html.slice(start, end);
+  const hrefs = [...quickListHtml.matchAll(/href=\"#([^\"]+)\"/g)].map((m) => m[1]);
+  assert.ok(hrefs.length > 0, "Expected at least one Quick picks link");
+
+  const unique = new Set(hrefs);
+  assert.equal(unique.size, hrefs.length, "Expected Quick picks anchors to be unique");
+
+  for (const id of hrefs) {
+    assert.ok(html.includes(`id=\"${id}\"`), `Expected an element id=\"${id}\" in the page`);
+  }
+});
+
+test("thought pieces do not render guide sidebar UI", () => {
+  const html = readDist(
+    "posts/2026-02-08-dehumidified-is-not-just-dry-why-moisture-control-matters/index.html",
+  );
+
+  // Article mode: no guide sidebar.
+  assert.ok(!html.includes("Quick picks"), "Did not expect Quick picks on thought pieces");
+  assert.ok(!html.includes("On this page"), "Did not expect TOC sidebar fallback on thought pieces");
+  assert.ok(
+    !html.includes("Tip: skim the picks first"),
+    "Did not expect guide sidebar tip text on thought pieces",
+  );
 });
 
 test("pick bodies are not truncated and stray one-item list is removed", () => {
